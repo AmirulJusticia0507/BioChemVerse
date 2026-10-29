@@ -12,7 +12,7 @@ const mobileOpen = sidebarMobileOpen
 
 const groups = [
   {
-    title: 'Jelajahi',
+    title: '',
     items: [
       { to: '/', label: 'Beranda', icon: 'M3 11.5 12 4l9 7.5M5.5 10v9h13v-9', exact: true },
       { to: '/modules', label: 'Modul', icon: 'M4 5h7v14H4zM13 5h7v14h-7z' },
@@ -104,6 +104,7 @@ onBeforeUnmount(() => {
     <nav class="flex-1 overflow-y-auto px-2 py-4" aria-label="Daftar menu">
       <template v-for="group in groups" :key="group.title">
         <p
+          v-if="group.title"
           class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500"
           :class="collapsed ? 'lg:text-center lg:text-[10px]' : ''"
         >

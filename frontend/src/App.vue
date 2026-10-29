@@ -8,7 +8,8 @@ import AppSidebar from './components/AppSidebar.vue'
 const { user, isLoggedIn, logout } = useAuth()
 const route = useRoute()
 
-// Judul top bar mengikuti halaman aktif.
+// Top bar menampilkan brand + judul halaman aktif (breadcrumb), supaya tidak
+// menduplikasi label menu yang sudah terlihat di sidebar.
 const titles = {
   home: 'Beranda',
   modules: 'Modul Pembelajaran',
@@ -33,9 +34,13 @@ const contentStyle = computed(() => ({ '--sidebar-w': `${sidebarWidth.value}px` 
     <div class="flex min-h-screen flex-col lg:pl-[var(--sidebar-w)] transition-[padding] duration-200 ease-out" :style="contentStyle">
       <header class="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 backdrop-blur">
         <div class="flex h-14 items-center gap-3 pl-16 pr-4 sm:pl-4 lg:px-6">
-          <h1 class="min-w-0 flex-1 truncate text-sm font-semibold text-slate-200 sm:text-base">
-            {{ pageTitle }}
-          </h1>
+          <div class="flex min-w-0 flex-1 items-center gap-2 text-sm">
+            <span class="shrink-0 font-bold text-white lg:hidden">BioChemVerse</span>
+            <template v-if="pageTitle !== 'Beranda'">
+              <span class="shrink-0 text-slate-600 lg:hidden" aria-hidden="true">/</span>
+              <span class="truncate text-slate-300" aria-current="page">{{ pageTitle }}</span>
+            </template>
+          </div>
 
           <template v-if="isLoggedIn">
             <span class="hidden items-center gap-2 text-sm text-slate-400 sm:flex">
