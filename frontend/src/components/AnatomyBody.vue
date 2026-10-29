@@ -159,8 +159,11 @@ const buildBody = () => {
   body?.removeFromParent()
   body = new THREE.Group()
   const female = variant.value === 'wanita'
-  const skin = new THREE.MeshStandardMaterial({ color: female ? 0xc98f77 : 0xb77b62, roughness: 0.68 })
-  const cloth = new THREE.MeshStandardMaterial({ color: 0x172554, roughness: 0.82 })
+  const skin = new THREE.MeshStandardMaterial({ color: female ? 0xb96a62 : 0xa9504b, roughness: 0.74, transparent: true, opacity: 0.78 })
+  const cloth = new THREE.MeshStandardMaterial({ color: 0xe8d9bd, roughness: 0.88 })
+  const lung = new THREE.MeshStandardMaterial({ color: 0xc47b92, roughness: 0.65 })
+  const heart = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.5 })
+  const organ = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.7 })
   const joint = new THREE.SphereGeometry(0.28, 28, 18)
   const limb = new THREE.CapsuleGeometry(0.25, 1.25, 8, 16)
 
@@ -169,6 +172,15 @@ const buildBody = () => {
   addPart(body, new THREE.SphereGeometry(1, 36, 24), skin, [0, 2.08, 0], [female ? 0.94 : 1.1, 1.2, 0.55])
   addPart(body, new THREE.SphereGeometry(1, 32, 22), skin, [0, 0.74, 0], [female ? 0.98 : 0.92, 0.72, 0.52])
   addPart(body, new THREE.CylinderGeometry(female ? 0.72 : 0.68, female ? 0.83 : 0.78, 0.75, 28), cloth, [0, 0.34, 0], [1, 1, 0.72])
+  // Atlas anatomy layer: organ sederhana di depan torso, bukan aset berlisensi pihak ketiga.
+  addPart(body, new THREE.SphereGeometry(0.43, 28, 18), lung, [-0.35, 2.05, 0.56], [0.82, 1.22, 0.3])
+  addPart(body, new THREE.SphereGeometry(0.43, 28, 18), lung, [0.35, 2.05, 0.56], [0.82, 1.22, 0.3])
+  const cardiac = addPart(body, new THREE.SphereGeometry(0.31, 24, 16), heart, [0.08, 1.68, 0.76], [0.9, 1.15, 0.42])
+  cardiac.rotation.z = -0.3
+  addPart(body, new THREE.SphereGeometry(0.56, 30, 18), organ, [0.2, 1.06, 0.56], [1.25, 0.62, 0.28])
+  for (let row = 0; row < 3; row += 1) for (let col = 0; col < 2; col += 1) {
+    addPart(body, new THREE.TorusGeometry(0.16, 0.055, 10, 20), organ, [(col - 0.5) * 0.36, 0.38 - row * 0.19, 0.62])
+  }
   for (const side of [-1, 1]) {
     addPart(body, joint, skin, [side * (female ? 0.92 : 1.1), 2.62, 0])
     const upperArm = addPart(body, limb, skin, [side * (female ? 1.13 : 1.32), 1.72, 0], [0.82, 1, 0.82])
