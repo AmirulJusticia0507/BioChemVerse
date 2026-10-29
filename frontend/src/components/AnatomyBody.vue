@@ -21,7 +21,25 @@
           </button>
         </div>
 
+        <div class="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-[radial-gradient(circle_at_50%_24%,#334155,transparent_48%),linear-gradient(145deg,#111827,#020617)] shadow-2xl shadow-blue-950/30">
+          <canvas ref="canvas" class="block aspect-[4/5] w-full cursor-grab touch-none active:cursor-grabbing" />
+          <p class="pointer-events-none absolute inset-x-0 bottom-3 text-center text-xs text-slate-400">Geser untuk memutar · scroll untuk zoom</p>
+        </div>
+        <div class="mt-4 flex max-w-md flex-wrap justify-center gap-2" aria-label="Pilih bagian tubuh">
+          <button
+            v-for="region in visibleRegions"
+            :key="region.id"
+            type="button"
+            class="rounded-full border px-3 py-1 text-xs transition-colors focus:ring-2 focus:ring-blue-500/50 focus:outline-none"
+            :class="selected === region.id ? 'border-blue-400 bg-blue-500/20 text-blue-100' : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'"
+            @click="select(region.id)"
+          >
+            {{ region.label }}
+          </button>
+        </div>
+
         <svg
+          v-if="false"
           viewBox="0 0 300 620"
           role="img"
           :aria-label="`Ilustrasi anatomi tubuh manusia ${variantLabel} beserta organ dalam`"
@@ -108,7 +126,9 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 // Tampilan anatomi: siluet pria (default) atau wanita.
 const variants = [
@@ -117,6 +137,104 @@ const variants = [
 ]
 const variant = ref('pria')
 const variantLabel = computed(() => variants.find((v) => v.id === variant.value)?.label ?? '')
+const canvas = ref(null)
+
+let renderer
+let scene
+let camera
+let controls
+let body
+let animationFrame
+let resizeObserver
+
+const addPart = (parent, geometry, material, position, scale = [1, 1, 1]) => {
+  const mesh = new THREE.Mesh(geometry, material)
+  mesh.position.set(...position)
+  mesh.scale.set(...scale)
+  parent.add(mesh)
+  return mesh
+}
+
+const buildBody = () => {
+  body?.removeFromParent()
+  body = new THREE.Group()
+  const female = variant.value === 'wanita'
+  const skin = new THREE.MeshStandardMaterial({ color: female ? 0xc98f77 : 0xb77b62, roughness: 0.68 })
+  const cloth = new THREE.MeshStandardMaterial({ color: 0x172554, roughness: 0.82 })
+  const joint = new THREE.SphereGeometry(0.28, 28, 18)
+  const limb = new THREE.CapsuleGeometry(0.25, 1.25, 8, 16)
+
+  addPart(body, new THREE.SphereGeometry(0.58, 32, 22), skin, [0, 3.72, 0], [0.92, 1.12, 0.9])
+  addPart(body, new THREE.CylinderGeometry(0.22, 0.28, 0.43, 20), skin, [0, 3.1, 0])
+  addPart(body, new THREE.SphereGeometry(1, 36, 24), skin, [0, 2.08, 0], [female ? 0.94 : 1.1, 1.2, 0.55])
+  addPart(body, new THREE.SphereGeometry(1, 32, 22), skin, [0, 0.74, 0], [female ? 0.98 : 0.92, 0.72, 0.52])
+  addPart(body, new THREE.CylinderGeometry(female ? 0.72 : 0.68, female ? 0.83 : 0.78, 0.75, 28), cloth, [0, 0.34, 0], [1, 1, 0.72])
+  for (const side of [-1, 1]) {
+    addPart(body, joint, skin, [side * (female ? 0.92 : 1.1), 2.62, 0])
+    const upperArm = addPart(body, limb, skin, [side * (female ? 1.13 : 1.32), 1.72, 0], [0.82, 1, 0.82])
+    upperArm.rotation.z = side * 0.17
+    const lowerArm = addPart(body, limb, skin, [side * (female ? 1.3 : 1.52), 0.3, 0], [0.7, 0.9, 0.7])
+    lowerArm.rotation.z = side * 0.1
+    addPart(body, new THREE.SphereGeometry(0.24, 22, 14), skin, [side * (female ? 1.38 : 1.62), -0.53, 0], [0.85, 1.18, 0.65])
+    addPart(body, limb, skin, [side * (female ? 0.48 : 0.5), -1.18, 0], [female ? 0.9 : 1, 1.27, 0.92])
+    addPart(body, limb, skin, [side * (female ? 0.48 : 0.5), -2.74, 0], [female ? 0.72 : 0.82, 1.25, 0.78])
+    addPart(body, new THREE.SphereGeometry(0.3, 22, 14), skin, [side * (female ? 0.48 : 0.5), -3.9, 0.14], [0.86, 0.55, 1.45])
+  }
+  if (female) for (const side of [-1, 1]) addPart(body, new THREE.SphereGeometry(0.35, 24, 16), skin, [side * 0.35, 2.15, 0.45], [1, 1, 0.55])
+  scene.add(body)
+}
+
+const resizeScene = () => {
+  const { clientWidth: width, clientHeight: height } = canvas.value
+  if (!width || !height) return
+  renderer.setSize(width, height, false)
+  camera.aspect = width / height
+  camera.updateProjectionMatrix()
+}
+
+onMounted(() => {
+  scene = new THREE.Scene()
+  camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100)
+  camera.position.set(0, 0.15, 12)
+  renderer = new THREE.WebGLRenderer({ canvas: canvas.value, antialias: true, alpha: true })
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  scene.add(new THREE.HemisphereLight(0xc7d2fe, 0x0f172a, 2.5))
+  const key = new THREE.DirectionalLight(0xffffff, 3.5)
+  key.position.set(4, 6, 6)
+  scene.add(key)
+  const rim = new THREE.DirectionalLight(0x60a5fa, 2)
+  rim.position.set(-5, 2, -4)
+  scene.add(rim)
+  controls = new OrbitControls(camera, canvas.value)
+  controls.target.set(0, 0, 0)
+  controls.enablePan = false
+  controls.minDistance = 8
+  controls.maxDistance = 16
+  controls.minPolarAngle = Math.PI / 3
+  controls.maxPolarAngle = Math.PI * 0.68
+  buildBody()
+  resizeObserver = new ResizeObserver(resizeScene)
+  resizeObserver.observe(canvas.value)
+  resizeScene()
+  const render = () => {
+    controls.update()
+    renderer.render(scene, camera)
+    animationFrame = requestAnimationFrame(render)
+  }
+  render()
+})
+
+watch(variant, () => {
+  selected.value = null
+  if (scene) buildBody()
+})
+
+onBeforeUnmount(() => {
+  cancelAnimationFrame(animationFrame)
+  resizeObserver?.disconnect()
+  controls?.dispose()
+  renderer?.dispose()
+})
 
 const selected = ref(null)
 const selectedInfo = computed(() => visibleRegions.value.find((r) => r.id === selected.value) ?? null)

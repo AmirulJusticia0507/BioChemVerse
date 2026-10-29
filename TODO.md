@@ -12,3 +12,4 @@
 - [ ] pending | medium | Frontend: halaman Login/Register terhubung API
 - [ ] pending | medium | Frontend: tampil progres modul saat login
 - [x] completed | medium | Anatomi: tampilan tubuh wanita (siluet, payudara, reproduksi) pada kerangka anatomi
+- [x] completed | medium | Anatomi: karakter 3D interaktif pria dan wanita
