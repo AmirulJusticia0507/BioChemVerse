@@ -29,6 +29,7 @@
 - [x] completed | high | Auth: forgot password dan reset password via email
 - [x] completed | medium | Backend: seed akun admin dan user development
 - [x] completed | low | UI: ikon tampil/sembunyi password pada form autentikasi
+- [x] completed | medium | Anatomi: panel interaktif sistem kardiovaskular
 - [x] completed | medium | UI: pilihan tema terang dan gelap
 - [x] completed | medium | UI: kontrol tampil/sembunyi sidebar desktop
 - [x] completed | medium | Frontend: PWA + deployment produksi Vercel

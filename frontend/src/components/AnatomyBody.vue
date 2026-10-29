@@ -174,6 +174,7 @@
             <span>{{ item }}</span>
           </li>
         </ul>
+        <CardiovascularSystem v-if="selected === 'jantung'" />
         <button
           v-if="selected"
           type="button"
@@ -191,6 +192,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import CardiovascularSystem from './anatomy/CardiovascularSystem.vue'
 
 // Tampilan anatomi: siluet pria (default) atau wanita.
 const variants = [
