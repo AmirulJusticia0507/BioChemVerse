@@ -20,3 +20,4 @@
 - [x] completed | low | Anatomi: materi struktur serat otot interaktif
 - [x] completed | medium | Anatomi: tombol bagian tubuh mengarahkan kamera model 3D
 - [x] completed | low | Anatomi: ilustrasi struktur otak pada panel kepala
+- [x] completed | medium | Anatomi: diagram fokus untuk seluruh bagian tubuh

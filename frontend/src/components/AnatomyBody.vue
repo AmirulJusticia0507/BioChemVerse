@@ -143,6 +143,31 @@
           </svg>
           <figcaption class="px-1 pt-1 text-center text-xs text-slate-400">Potongan samping konseptual: lobus cerebrum, cerebellum, batang otak, dan pelindung tengkorak.</figcaption>
         </figure>
+        <figure v-else-if="selected" class="mt-4 overflow-hidden rounded-lg border border-slate-700 bg-slate-900/70 p-2">
+          <svg viewBox="0 0 280 170" role="img" :aria-label="`Diagram fokus ${selectedInfo?.label}`" class="w-full">
+            <path d="M122 17 C105 18 98 32 102 45 L92 56 L87 99 L100 116 L106 157 L126 157 L132 119 L140 119 L147 157 L167 157 L173 116 L187 99 L182 56 L172 45 C176 32 169 18 152 17 Z" fill="#334155" fill-opacity=".45" stroke="#94a3b8" stroke-width="2" />
+            <g v-if="['dada', 'jantung'].includes(selected)">
+              <path d="M128 57 C112 51 103 65 105 83 C107 95 116 99 126 95 Z M146 57 C162 51 171 65 169 83 C167 95 158 99 148 94 Z" fill="#f472b6" />
+              <path v-if="selected === 'jantung'" d="M137 70 C145 60 157 69 151 82 L138 96 L125 82 C119 69 131 60 137 70 Z" fill="#ef4444" stroke="#fecaca" stroke-width="2" />
+            </g>
+            <path v-if="selected === 'hati'" d="M137 94 C155 84 174 89 176 105 C166 116 145 117 128 108 Z" fill="#d97706" stroke="#fed7aa" stroke-width="2" />
+            <path v-if="selected === 'lambung'" d="M130 90 C115 86 111 103 120 111 C129 119 143 111 140 100 C138 93 136 91 130 90 Z" fill="#fb7185" stroke="#fecdd3" stroke-width="2" />
+            <g v-if="selected === 'usus'" fill="none" stroke="#fbbf24" stroke-width="7" stroke-linecap="round">
+              <path d="M113 99 C133 91 158 99 145 107 C130 115 111 107 121 116 C132 126 156 113 154 125" />
+              <path d="M112 122 C124 132 145 127 151 137" />
+            </g>
+            <g v-if="selected === 'ginjal'" fill="#8b5cf6" stroke="#ddd6fe" stroke-width="2"><path d="M116 99 C101 98 103 119 114 119 C124 116 123 103 116 99 Z" /><path d="M160 99 C175 98 173 119 162 119 C152 116 153 103 160 99 Z" /></g>
+            <g v-if="selected === 'serat-otot'" stroke="#fb7185" stroke-width="5"><path d="M89 73 H191" /><path d="M89 86 H191" /><path d="M89 99 H191" /><path d="M89 112 H191" /></g>
+            <g v-if="selected === 'tulang'" fill="none" stroke="#e2e8f0" stroke-width="4"><path d="M137 47 V137" /><path d="M106 62 L137 77 L168 62 M112 88 L137 98 L162 88 M111 116 L137 108 L163 116" /><path d="M137 137 L119 157 M137 137 L155 157" /></g>
+            <g v-if="selected === 'lengan'" fill="none" stroke="#2dd4bf" stroke-width="10" stroke-linecap="round"><path d="M99 61 L72 108 L83 139" /><path d="M175 61 L202 108 L191 139" /></g>
+            <g v-if="selected === 'kaki'" fill="none" stroke="#2dd4bf" stroke-width="12" stroke-linecap="round"><path d="M119 113 L113 154" /><path d="M157 113 L163 154" /></g>
+            <g v-if="['panggul', 'reproduksi-wanita'].includes(selected)" fill="none" stroke="#2dd4bf" stroke-width="7"><path d="M110 111 Q137 132 165 111" /><path d="M110 111 Q137 102 165 111" /></g>
+            <path v-if="selected === 'reproduksi-wanita'" d="M130 119 C130 109 144 109 144 119 L137 132 Z M130 116 L119 111 M144 116 L155 111" fill="#d946ef" stroke="#f5d0fe" stroke-width="2" />
+            <path v-if="selected === 'payudara'" d="M116 67 C121 56 132 60 132 71 M158 67 C153 56 142 60 142 71" fill="none" stroke="#f472b6" stroke-width="10" stroke-linecap="round" />
+            <path v-if="selected === 'leher'" d="M132 43 V57 M142 43 V57" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" />
+          </svg>
+          <figcaption class="px-1 pt-1 text-center text-xs text-slate-400">Diagram fokus konseptual: {{ selectedInfo?.label }}.</figcaption>
+        </figure>
         <ul v-if="selectedItems" class="mt-4 space-y-1.5 text-sm text-slate-300">
           <li v-for="item in selectedItems" :key="item" class="flex gap-2">
             <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" aria-hidden="true" />
