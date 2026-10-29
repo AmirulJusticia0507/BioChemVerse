@@ -1,0 +1,369 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BioChemVerse API",
+    "description": "API untuk platform edukasi BioChemVerse: ChemSphere (kimia), ForensiLab (forensik), dan AnatomiMed (anatomi & simulasi pasien).",
+    "contact": {
+      "name": "BioChemVerse",
+      "url": "https://github.com/AmirulJusticia0507/BioChemVerse"
+    },
+    "license": {
+      "name": "MIT"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Info API",
+        "description": "Informasi dasar API: nama, versi, dan lokasi dokumentasi.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RootResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Liveness check",
+        "description": "Status proses aplikasi (tidak mengecek dependency).",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "general"
+        ],
+        "summary": "Readiness check",
+        "description": "Cek koneksi PostgreSQL dan Redis; 503 bila salah satu tidak siap.",
+        "operationId": "readiness_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "PostgreSQL dan/atau Redis tidak siap",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules": {
+      "get": {
+        "tags": [
+          "modules"
+        ],
+        "summary": "Daftar modul platform",
+        "description": "Semua modul utama BioChemVerse beserta fiturnya.",
+        "operationId": "list_modules_api_v1_modules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorDetail": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status",
+            "examples": [
+              "degraded"
+            ]
+          },
+          "postgres": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Postgres",
+            "examples": [
+              "down"
+            ]
+          },
+          "redis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redis",
+            "examples": [
+              "ok"
+            ]
+          }
+        },
+        "type": "object",
+        "title": "ErrorDetail"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/ErrorDetail"
+              }
+            ],
+            "title": "Detail",
+            "description": "Keterangan kesalahan; memuat 'degraded' saat readiness gagal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "'ok' selama proses berjalan",
+            "examples": [
+              "ok"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthResponse"
+      },
+      "ModuleListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Jumlah modul",
+            "examples": [
+              3
+            ]
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ModuleOut"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "data"
+        ],
+        "title": "ModuleListResponse"
+      },
+      "ModuleOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Kode modul",
+            "examples": [
+              "chemsphere"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nama modul",
+            "examples": [
+              "ChemSphere Engine"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "Ringkasan fungsi modul"
+          },
+          "features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Features",
+            "description": "Daftar fitur utama modul"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "features"
+        ],
+        "title": "ModuleOut"
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "'ready' bila semua dependency siap",
+            "examples": [
+              "ready"
+            ]
+          },
+          "postgres": {
+            "type": "string",
+            "title": "Postgres",
+            "description": "Status koneksi PostgreSQL",
+            "examples": [
+              "ok"
+            ]
+          },
+          "redis": {
+            "type": "string",
+            "title": "Redis",
+            "description": "Status koneksi Redis",
+            "examples": [
+              "ok"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "description": "Environment aktif (ENV)",
+            "examples": [
+              "development"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "postgres",
+          "redis",
+          "environment"
+        ],
+        "title": "ReadinessResponse"
+      },
+      "RootResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nama API",
+            "examples": [
+              "BioChemVerse API"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Versi API",
+            "examples": [
+              "0.1.0"
+            ]
+          },
+          "docs": {
+            "type": "string",
+            "title": "Docs",
+            "description": "URL Swagger UI",
+            "examples": [
+              "/docs"
+            ]
+          },
+          "openapi": {
+            "type": "string",
+            "title": "Openapi",
+            "description": "URL spec OpenAPI",
+            "examples": [
+              "/openapi.json"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "version",
+          "docs",
+          "openapi"
+        ],
+        "title": "RootResponse"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "general",
+      "description": "Health check dan informasi dasar API."
+    },
+    {
+      "name": "modules",
+      "description": "Daftar modul platform BioChemVerse: ChemSphere, ForensiLab, AnatomiMed."
+    }
+  ]
+}
