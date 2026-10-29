@@ -21,3 +21,4 @@
 - [x] completed | medium | Anatomi: tombol bagian tubuh menyorot area dan memfokuskan kamera model 3D
 - [x] completed | low | Anatomi: ilustrasi struktur otak pada panel kepala
 - [x] completed | medium | Anatomi: diagram fokus untuk seluruh bagian tubuh
+- [x] completed | high | Anatomi: menu Operasi — katalog prosedur bedah + visual tata letak 3D (laparoskopi, apendektomi, kolesistektomi, herniorafi, seksio)

@@ -16,6 +16,7 @@ const { user, isLoggedIn, logout } = useAuth()
         <nav class="flex items-center gap-1 text-sm">
           <RouterLink to="/" class="nav-link">Beranda</RouterLink>
           <RouterLink to="/modules" class="nav-link">Modul</RouterLink>
+          <RouterLink to="/operasi" class="nav-link">Operasi</RouterLink>
           <RouterLink to="/tabel-periodik" class="nav-link">Tabel Periodik</RouterLink>
 
           <template v-if="isLoggedIn">
