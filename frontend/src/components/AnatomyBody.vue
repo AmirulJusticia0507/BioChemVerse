@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-col items-center">
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,260px)] lg:items-start">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,260px)] lg:items-start">
       <!-- Ilustrasi anatomi: pilih tampilan tubuh pria (default) atau wanita -->
-      <div class="flex flex-col items-center">
+      <div class="flex w-full flex-col items-center">
         <div
           class="mb-3 inline-flex rounded-lg bg-slate-800 p-1 ring-1 ring-slate-700"
           role="group"
@@ -21,21 +21,38 @@
           </button>
         </div>
 
-        <div class="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-[radial-gradient(circle_at_50%_24%,#334155,transparent_48%),linear-gradient(145deg,#111827,#020617)] shadow-2xl shadow-blue-950/30">
-          <canvas ref="canvas" class="block aspect-[4/5] w-full cursor-grab touch-none active:cursor-grabbing" />
-          <p class="pointer-events-none absolute inset-x-0 bottom-3 text-center text-xs text-slate-400">Geser untuk memutar · scroll untuk zoom</p>
+        <div class="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl shadow-blue-950/30">
+          <iframe
+            :key="variant"
+            :src="sketchfabModel.embedUrl"
+            :title="`Model 3D anatomi ${variantLabel}`"
+            class="absolute inset-0 h-full w-full"
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            allowfullscreen
+          />
+          <canvas v-if="false" ref="canvas" class="block h-full w-full" />
         </div>
-        <div class="mt-4 flex max-w-md flex-wrap justify-center gap-2" aria-label="Pilih bagian tubuh">
-          <button
-            v-for="region in visibleRegions"
-            :key="region.id"
-            type="button"
-            class="rounded-full border px-3 py-1 text-xs transition-colors focus:ring-2 focus:ring-blue-500/50 focus:outline-none"
-            :class="selected === region.id ? 'border-blue-400 bg-blue-500/20 text-blue-100' : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'"
-            @click="select(region.id)"
-          >
-            {{ region.label }}
-          </button>
+        <p class="mt-2 text-center text-[11px] text-slate-500">
+          Model 3D: <a :href="sketchfabModel.sourceUrl" class="underline hover:text-slate-300" target="_blank" rel="noopener">{{ sketchfabModel.title }}</a>
+          oleh {{ sketchfabModel.author }} · CC BY 4.0
+        </p>
+        <div
+          class="mt-3 max-h-44 w-full max-w-md overflow-y-auto rounded-xl border border-slate-800 bg-slate-900/40 p-2"
+          role="group"
+          aria-label="Pilih bagian tubuh"
+        >
+          <div class="flex flex-wrap justify-center gap-1.5">
+            <button
+              v-for="region in visibleRegions"
+              :key="region.id"
+              type="button"
+              class="rounded-full border px-2.5 py-1 text-[11px] transition-colors focus:ring-2 focus:ring-blue-500/50 focus:outline-none"
+              :class="selected === region.id ? 'border-blue-400 bg-blue-500/20 text-blue-100' : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'"
+              @click="select(region.id)"
+            >
+              {{ region.label }}
+            </button>
+          </div>
         </div>
 
         <svg
@@ -137,6 +154,20 @@ const variants = [
 ]
 const variant = ref('pria')
 const variantLabel = computed(() => variants.find((v) => v.id === variant.value)?.label ?? '')
+const sketchfabModel = computed(() => ({
+  pria: {
+    title: 'Male base muscular anatomy',
+    author: 'CharacterZone',
+    sourceUrl: 'https://sketchfab.com/3d-models/male-base-muscular-anatomy-0954aa04666d45aab9633009318f7b66',
+    embedUrl: 'https://sketchfab.com/models/0954aa04666d45aab9633009318f7b66/embed?autospin=0&ui_theme=dark&ui_infos=0',
+  },
+  wanita: {
+    title: 'Female muscle human body',
+    author: 'Rena',
+    sourceUrl: 'https://sketchfab.com/3d-models/female-muscle-human-body-aa022f8c27e04aea89e731f66484a299',
+    embedUrl: 'https://sketchfab.com/models/aa022f8c27e04aea89e731f66484a299/embed?autospin=0&ui_theme=dark&ui_infos=0',
+  },
+})[variant.value])
 const canvas = ref(null)
 
 let renderer
@@ -194,6 +225,32 @@ const buildBody = () => {
   }
   if (female) for (const side of [-1, 1]) addPart(body, new THREE.SphereGeometry(0.35, 24, 16), skin, [side * 0.35, 2.15, 0.45], [1, 1, 0.55])
   scene.add(body)
+  frameCamera()
+}
+
+// Bingkai kamera dari bounding box sosok: seluruh tubuh (termasuk kaki) dijamin masuk
+// layar, dan tinggi figure mengikuti rasio canvas agar tidak terpotong saat sempit.
+const frameCamera = () => {
+  if (!camera || !body) return
+  const box = new THREE.Box3().setFromObject(body)
+  const size = box.getSize(new THREE.Vector3())
+  const center = box.getCenter(new THREE.Vector3())
+  const fitHeight = size.y * 1.18
+  const fitWidth = size.x * 1.45
+  const vFov = THREE.MathUtils.degToRad(camera.fov)
+  const distance = Math.max(
+    fitHeight / 2 / Math.tan(vFov / 2),
+    fitWidth / 2 / Math.tan(vFov / 2) / Math.max(camera.aspect, 0.01),
+  )
+  camera.position.set(center.x, center.y, center.z + distance)
+  camera.lookAt(center)
+  if (controls) {
+    controls.target.copy(center)
+    controls.minDistance = distance * 0.85
+    controls.maxDistance = distance * 1.6
+    controls.update()
+  }
+  camera.updateProjectionMatrix()
 }
 
 const resizeScene = () => {
@@ -202,9 +259,11 @@ const resizeScene = () => {
   renderer.setSize(width, height, false)
   camera.aspect = width / height
   camera.updateProjectionMatrix()
+  frameCamera()
 }
 
 onMounted(() => {
+  if (!canvas.value) return
   scene = new THREE.Scene()
   camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100)
   camera.position.set(0, 0.15, 12)
@@ -220,8 +279,6 @@ onMounted(() => {
   controls = new OrbitControls(camera, canvas.value)
   controls.target.set(0, 0, 0)
   controls.enablePan = false
-  controls.minDistance = 8
-  controls.maxDistance = 16
   controls.minPolarAngle = Math.PI / 3
   controls.maxPolarAngle = Math.PI * 0.68
   buildBody()

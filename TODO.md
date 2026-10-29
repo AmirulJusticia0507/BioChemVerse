@@ -14,3 +14,4 @@
 - [x] completed | medium | Anatomi: tampilan tubuh wanita (siluet, payudara, reproduksi) pada kerangka anatomi
 - [x] completed | medium | Anatomi: karakter 3D interaktif pria dan wanita
 - [x] completed | medium | Anatomi: gaya atlas organ untuk model 3D pria dan wanita
+- [x] completed | medium | Anatomi: integrasi model Sketchfab gratis berlisensi CC BY
