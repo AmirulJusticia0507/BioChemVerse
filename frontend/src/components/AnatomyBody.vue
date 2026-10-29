@@ -124,6 +124,25 @@
         <p class="mt-2 text-sm text-slate-300">
           {{ selectedInfo?.desc ?? 'Pilih organ atau bagian tubuh pada ilustrasi untuk melihat keterangannya.' }}
         </p>
+        <figure v-if="selected === 'kepala'" class="mt-4 overflow-hidden rounded-lg border border-slate-700 bg-slate-900/70 p-2">
+          <svg viewBox="0 0 280 170" role="img" aria-labelledby="brain-title brain-desc" class="w-full">
+            <title id="brain-title">Struktur utama otak di dalam tengkorak</title>
+            <desc id="brain-desc">Diagram potongan samping yang memperlihatkan cerebrum, cerebellum, batang otak, dan tengkorak.</desc>
+            <path d="M74 136 C48 120 43 87 55 59 C65 35 91 18 124 18 C162 16 193 38 204 69 C214 97 204 128 181 144 C158 160 103 157 74 136 Z" fill="#cbd5e1" fill-opacity=".18" stroke="#cbd5e1" stroke-width="3" />
+            <path d="M78 113 C60 93 65 56 95 42 C121 27 163 37 181 59 C197 78 189 112 171 126 C148 143 99 137 78 113 Z" fill="#f472b6" stroke="#fbcfe8" stroke-width="2" />
+            <path d="M78 113 C69 98 70 73 84 57 C96 44 111 40 124 41 L122 132 C101 133 87 125 78 113 Z" fill="#fb7185" fill-opacity=".72" />
+            <path d="M124 41 C151 38 175 53 181 75 C186 94 179 113 163 126 L122 132 Z" fill="#c084fc" fill-opacity=".7" />
+            <path d="M146 118 C165 106 185 112 190 129 C194 145 180 155 162 151 C147 148 139 131 146 118 Z" fill="#fbbf24" stroke="#fde68a" stroke-width="2" />
+            <path d="M144 127 C141 142 142 151 135 163" fill="none" stroke="#60a5fa" stroke-width="9" stroke-linecap="round" />
+            <g fill="#e2e8f0" font-size="10" font-family="sans-serif">
+              <text x="17" y="31">Tengkorak</text><path d="M63 34 L82 43" stroke="#cbd5e1" />
+              <text x="199" y="48">Cerebrum</text><path d="M195 51 L169 65" stroke="#fbcfe8" />
+              <text x="196" y="133">Cerebellum</text><path d="M191 130 L179 132" stroke="#fde68a" />
+              <text x="174" y="161">Batang otak</text><path d="M170 157 L142 153" stroke="#93c5fd" />
+            </g>
+          </svg>
+          <figcaption class="px-1 pt-1 text-center text-xs text-slate-400">Potongan samping konseptual: lobus cerebrum, cerebellum, batang otak, dan pelindung tengkorak.</figcaption>
+        </figure>
         <ul v-if="selectedItems" class="mt-4 space-y-1.5 text-sm text-slate-300">
           <li v-for="item in selectedItems" :key="item" class="flex gap-2">
             <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" aria-hidden="true" />
