@@ -117,9 +117,15 @@ app = FastAPI(
     license_info={"name": "MIT"},
 )
 
+# Di mode development, semua origin localhost/127.0.0.1 (port apa pun —
+# Vite kadang pindah ke 5174/5175 bila port utama terpakai) diizinkan.
+# Production tetap memakai daftar ketat CORS_ORIGINS.
+LOCAL_ORIGIN_REGEX = r"http://(localhost|127\.0\.0\.1)(:\d+)?"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=LOCAL_ORIGIN_REGEX if settings.is_development else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

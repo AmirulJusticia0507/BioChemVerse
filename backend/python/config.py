@@ -35,6 +35,11 @@ class Settings:
         if len(self.jwt_secret) < 32:
             raise ValueError("JWT_SECRET minimal 32 karakter (RFC 7518 untuk HS256)")
 
+    @property
+    def is_development(self) -> bool:
+        """True bila berjalan di mode development (bukan production/staging)."""
+        return self.env not in {"production", "staging"}
+
 
 @lru_cache
 def get_settings() -> Settings:

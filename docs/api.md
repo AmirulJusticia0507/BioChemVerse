@@ -320,7 +320,7 @@ Field yang **tidak dikirim dipertahankan** (mis. kirim `{"completed": true}` saj
 
 - **Base URL:** `http://localhost:8000`
 - **Format:** JSON, UTF-8
-- **CORS:** izin dibaca dari `CORS_ORIGINS` (default `http://localhost:5173`, `http://localhost:3000`)
+- **CORS:** izin dibaca dari `CORS_ORIGINS` (default `http://localhost:5173`, `http://localhost:3000`). Mode development (`ENV` selain `production`/`staging`) juga mengizinkan semua origin `http://localhost:<port apa pun>` & `http://127.0.0.1:<port>` — misal Vite yang pindah ke `:5174`.
 - **Kode status:** `200` sukses · `503` dependency tidak siap · `404` path tidak ditemukan · `422` body/parameter tidak valid
 - **Skema error standar:** `{"detail": "..."}`
 
