@@ -75,6 +75,25 @@ Semua komponen dibuat sekali lalu dipakai ulang (`frontend/src/components/`):
 - Ilustrasi/aset: `frontend/src/assets/`.
 - Ikon selalu **dua ukuran**: 16px (inline teks) dan 20px (toolbar/tombol).
 
+## 5a. Navigasi (Sidebar)
+
+Sidebar adalah navigasi utama; header atas **bukan** tempat menu. Lihat `AppSidebar.vue`.
+
+| Keadaan | Lebar | Perilaku |
+| --- | --- | --- |
+| Desktop ≥ `lg` — penuh | `240px` | Label + ikon |
+| Desktop ≥ `lg` — ciut | `72px` | Ikon saja, label lewat `title` |
+| Mobile < `lg` | `256px` | Drawer geser, tertutup default |
+
+**Aturan:**
+
+- State dibagi lewat `composables/useSidebar.js`; konten di `App.vue` ikut bergeser via variabel `--sidebar-w` (transisi 200ms).
+- Toggle desktop: tombol "Ciutkan/Lebarkan" di bawah sidebar. Toggle mobile: tombol hamburger di kiri header; tutup dengan tombol ✕, klik backdrop, atau `Esc`.
+- Drawer mobile mengunci scroll body (`overflow: hidden`) dan menutup otomatis saat pindah halaman.
+- Item aktif memakai `bg-blue-500/15 text-blue-300 font-medium`; rail saat ciut tetap memakai aksen yang sama.
+- Tombol ikon-saja wajib punya `aria-label`; drawer memakai `aria-expanded` + `aria-controls`.
+- Top bar hanya memuat judul halaman + aksi akun, tinggi tetap `56px` supaya tidak memakan layar.
+
 ## 6. Ilustrasi Anatomi & Sains
 
 - Anatomi: siluet tubuh proporsi ±7,5 kepala (`fill` gradien `slate-900`→`slate-700`) dengan organ dalam berwarna lembut (paru `sky-500`, jantung `red-600`, hati `orange-600`, lambung `rose-500`, usus `amber-500`, ginjal `violet-500`, panggul `teal-400`) — lihat `AnatomyBody.vue`.

@@ -3,6 +3,8 @@ import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  // Kembalikan posisi scroll saat tombol back/forward; halaman baru selalu dari atas.
+  scrollBehavior: (to, from, savedPosition) => savedPosition ?? { top: 0 },
   routes: [
     { path: '/', name: 'home', component: HomeView },
     {
@@ -19,35 +21,11 @@ const router = createRouter({
       path: '/tabel-periodik',
       name: 'periodic-table',
       component: () => import('../views/PeriodicTableView.vue'),
-    },    {
+    },
+    {
       path: '/tabel-periodik/:symbol',
       name: 'element-detail',
       component: () => import('../views/ElementDetailView.vue'),
-    },
-    {
-      path: '/bandingkan',
-      name: 'compare',
-      component: () => import('../views/CompareView.vue'),
-    },
-    {
-      path: '/belajar',
-      name: 'study',
-      component: () => import('../views/StudyView.vue'),
-    },
-    {
-      path: '/kalkulator',
-      name: 'calculator',
-      component: () => import('../views/CalculatorView.vue'),
-    },
-    {
-      path: '/kuis',
-      name: 'quiz',
-      component: () => import('../views/QuizView.vue'),
-    },
-    {
-      path: '/bookmark',
-      name: 'bookmarks',
-      component: () => import('../views/BookmarksView.vue'),
     },
     {
       path: '/login',
@@ -65,7 +43,6 @@ const router = createRouter({
       component: () => import('../views/NotFoundView.vue'),
     },
   ],
-  scrollBehavior: () => ({ top: 0 }),
 })
 
 export default router
