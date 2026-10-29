@@ -7,9 +7,11 @@ scripts/import-chemsphere-data.mjs dari proyek ChemSphere).
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import asyncpg
+import bcrypt
 
 DATA_DIR = Path(__file__).with_name("data")
 EXPECTED_ELEMENTS = 118
@@ -91,3 +93,35 @@ async def ensure_seeded(pool: asyncpg.Pool) -> bool:
             )
 
     return True
+
+
+async def ensure_development_users(pool: asyncpg.Pool) -> None:
+    """Buat akun lokal yang aman dipakai untuk demo; jangan pernah panggil di produksi."""
+    accounts = (
+        (
+            os.getenv("SEED_ADMIN_USERNAME", "admin"),
+            os.getenv("SEED_ADMIN_EMAIL", "admin@biochemverse.local"),
+            os.getenv("SEED_ADMIN_PASSWORD", "Admin123!"),
+            "admin",
+        ),
+        (
+            os.getenv("SEED_USER_USERNAME", "demo"),
+            os.getenv("SEED_USER_EMAIL", "demo@biochemverse.local"),
+            os.getenv("SEED_USER_PASSWORD", "Demo123!"),
+            "student",
+        ),
+    )
+    async with pool.acquire() as conn:
+        for username, email, password, role in accounts:
+            password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+            await conn.execute(
+                """
+                INSERT INTO users (username, email, password_hash, role)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (username) DO NOTHING
+                """,
+                username,
+                email,
+                password_hash,
+                role,
+            )

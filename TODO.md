@@ -27,6 +27,7 @@
 - [x] completed | high | ChemSphere: kalkulator stoikiometri (massa molar, penyetaraan, mol, larutan)
 - [x] completed | high | ChemSphere: kuis unsur (backend soal + attempt, halaman kuis)
 - [x] completed | high | Auth: forgot password dan reset password via email
+- [x] completed | medium | Backend: seed akun admin dan user development
 - [x] completed | medium | UI: pilihan tema terang dan gelap
 - [x] completed | medium | UI: kontrol tampil/sembunyi sidebar desktop
 - [x] completed | medium | Frontend: PWA + deployment produksi Vercel

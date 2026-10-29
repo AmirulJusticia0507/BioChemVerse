@@ -120,6 +120,8 @@ async def lifespan(app: FastAPI):
     await db.ensure_database(settings.database_url)
     pool = await db.connect(settings.database_url)
     await seed.ensure_seeded(pool)
+    if settings.is_development:
+        await seed.ensure_development_users(pool)
     await cache.connect(settings.redis_url)
     yield
     await cache.disconnect()

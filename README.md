@@ -146,6 +146,7 @@ biochemverse/
 | CI/CD (GitHub Actions) | ✅ |
 | Vue Router (Beranda, Modul, Login, Daftar, 404) | ✅ |
 | Auth JWT (register/login/me + UI login-daftar) | ✅ |
+| Seed akun development (`admin` dan `demo`) | ✅ |
 | CRUD progres modul (tampil & update saat login) | ✅ |
 | ChemSphere / ForensiLab / AnatomiMed (fitur inti) | ⏳ |
 
