@@ -6,5 +6,3 @@
 - [x] completed | medium | Setup PostgreSQL + Redis
 - [x] completed | medium | Dokumentasi API (OpenAPI/Swagger)
 - [x] completed | low | Setup CI/CD pipeline
-filePath">
-C:\laragon\www\BioChemVerse\TODO.md

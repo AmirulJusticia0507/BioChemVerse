@@ -9,5 +9,3 @@
 <script setup>
 import AnatomyBody from './components/AnatomyBody.vue'
 </script>
-filePath">
-C:\laragon\www\BioChemVerse\frontend\src\App.vue

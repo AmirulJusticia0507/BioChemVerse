@@ -22,5 +22,3 @@ const parts = [
   { id: 'rightLeg', shape: 'line', props: { x1: 125, y1: 185, x2: 140, y2: 300 } },
 ]
 </script>
-filePath">
-C:\laragon\www\BioChemVerse\frontend\src\components\AnatomyBody.vue

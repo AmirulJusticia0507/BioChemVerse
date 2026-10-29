@@ -53,5 +53,3 @@ Kulit (Epidermis, Dermis, Hipodermis), Rambut, Kuku.
 
 ## 12. Sistem Panca Indera
 Mata, Telinga (Luar/Tengah/Dalam), Hidung (Epitel Olfaktorius), Lidah (Papila & Taste Buds), Kulit (Reseptor sensorik).
-filePath">
-C:\laragon\www\BioChemVerse\docs\anatomy.md
