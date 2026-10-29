@@ -93,6 +93,9 @@ Sidebar adalah navigasi utama; header atas **bukan** tempat menu. Lihat `AppSide
 - Item aktif memakai `bg-blue-500/15 text-blue-300 font-medium`; rail saat ciut tetap memakai aksen yang sama.
 - Tombol ikon-saja wajib punya `aria-label`; drawer memakai `aria-expanded` + `aria-controls`.
 - Top bar hanya memuat judul halaman + aksi akun, tinggi tetap `56px` supaya tidak memakan layar.
+- Grup menu kedua **Dukungan** berisi Bantuan, Tentang, Privasi, Cookies. Empat halaman yang sama juga diulang di footer `App.vue`.
+- Halaman dokumen statis memakai `components/AppDocument.vue`: judul + tanggal, lebar maksimum `3xl`, tipografi `.doc` (h2/h3/p/ul/table/`code`). Konten ditulis dengan tag HTML polos; tabel lebar dibungkus `.table-scroll` agar digeser di dalam kartu, bukan melebarkan halaman.
+- Di halaman dokumen tidak ada menu utama yang tampil aktif (`linkActiveClass` di `AppSidebar.vue`).
 
 ## 6. Ilustrasi Anatomi & Sains
 

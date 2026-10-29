@@ -38,6 +38,26 @@ const router = createRouter({
       component: () => import('../views/RegisterView.vue'),
     },
     {
+      path: '/tentang',
+      name: 'about',
+      component: () => import('../views/AboutView.vue'),
+    },
+    {
+      path: '/bantuan',
+      name: 'help',
+      component: () => import('../views/HelpView.vue'),
+    },
+    {
+      path: '/kebijakan-privasi',
+      name: 'privacy',
+      component: () => import('../views/PrivacyView.vue'),
+    },
+    {
+      path: '/kebijakan-cookies',
+      name: 'cookies',
+      component: () => import('../views/CookiesView.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),

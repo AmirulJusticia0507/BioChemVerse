@@ -26,4 +26,4 @@
 - [x] completed | high | ChemSphere: halaman Bandingkan unsur + Belajar (flashcard, tren, kelarutan)
 - [x] completed | high | ChemSphere: kalkulator stoikiometri (massa molar, penyetaraan, mol, larutan)
 - [x] completed | high | ChemSphere: kuis unsur (backend soal + attempt, halaman kuis)
-- [x] completed | medium | ChemSphere: bookmark unsur (backend + tombol di detail unsur)
+- [x] completed | medium | UI: halaman informasi — Tentang, Bantuan, Kebijakan Privasi, Kebijakan Cookies (+ link di sidebar & footer)

@@ -18,12 +18,23 @@ const titles = {
   'element-detail': 'Detail Unsur',
   login: 'Masuk',
   register: 'Daftar',
+  about: 'Tentang',
+  help: 'Bantuan',
+  privacy: 'Kebijakan Privasi',
+  cookies: 'Kebijakan Cookies',
   'not-found': 'Halaman tidak ditemukan',
 }
 const pageTitle = computed(() => titles[route.name] ?? 'BioChemVerse')
 
 // Konten digeser selebar sidebar saat ini (72px rail atau 240px penuh).
 const contentStyle = computed(() => ({ '--sidebar-w': `${sidebarWidth.value}px` }))
+
+const footerLinks = [
+  { to: '/tentang', label: 'Tentang' },
+  { to: '/bantuan', label: 'Bantuan' },
+  { to: '/kebijakan-privasi', label: 'Kebijakan Privasi' },
+  { to: '/kebijakan-cookies', label: 'Kebijakan Cookies' },
+]
 </script>
 
 <template>
@@ -79,8 +90,18 @@ const contentStyle = computed(() => ({ '--sidebar-w': `${sidebarWidth.value}px` 
         <RouterView />
       </main>
 
-      <footer class="border-t border-slate-800 px-4 py-6 text-center text-xs text-slate-500">
-        BioChemVerse · ChemSphere · ForensiLab · AnatomiMed — MIT License
+      <footer class="border-t border-slate-800 px-4 py-8 text-center text-xs text-slate-500">
+        <nav class="mb-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2" aria-label="Tautan informasi">
+          <RouterLink
+            v-for="link in footerLinks"
+            :key="link.to"
+            :to="link.to"
+            class="rounded text-slate-400 transition-colors hover:text-white focus:ring-2 focus:ring-blue-500/60 focus:outline-none"
+          >
+            {{ link.label }}
+          </RouterLink>
+        </nav>
+        <p>BioChemVerse · ChemSphere · ForensiLab · AnatomiMed — MIT License</p>
       </footer>
     </div>
   </div>

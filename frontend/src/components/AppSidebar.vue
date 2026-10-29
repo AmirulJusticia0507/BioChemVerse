@@ -20,7 +20,23 @@ const groups = [
       { to: '/tabel-periodik', label: 'Tabel Periodik', icon: 'M4 4h4v4H4zM10 4h4v4h-4zM16 4h4v4h-4zM4 10h4v4H4zM10 10h4v4h-4zM16 10h4v4h-4zM4 16h4v4H4zM10 16h4v4h-4z' },
     ],
   },
+  {
+    title: 'Dukungan',
+    items: [
+      { to: '/bantuan', label: 'Bantuan', icon: 'M12 18h.01M9.1 9a3 3 0 1 1 4.2 2.8c-.8.4-1.3 1.1-1.3 2V14' },
+      { to: '/tentang', label: 'Tentang', icon: 'M12 8h.01M11 12h1v5h1M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z' },
+      { to: '/kebijakan-privasi', label: 'Privasi', icon: 'M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6zM9.5 12l1.8 1.8 3.4-3.6' },
+      { to: '/kebijakan-cookies', label: 'Cookies', icon: 'M12 3a9 9 0 1 0 9 9 4 4 0 0 1-5-5 4 4 0 0 1-4-4zM9 10h.01M14 14h.01M9.5 15.5h.01' },
+    ],
+  },
 ]
+
+// Halaman dokumen statis: tidak ada menu utama yang boleh terlihat aktif.
+const documentPaths = ['/bantuan', '/tentang', '/kebijakan-privasi', '/kebijakan-cookies']
+const linkActiveClass = (item) => {
+  if (documentPaths.includes(route.path)) return ''
+  return item.exact ? '' : 'bg-blue-500/15 font-medium text-blue-300'
+}
 
 const closeMobile = () => (mobileOpen.value = false)
 const toggleCollapsed = () => (collapsed.value = !collapsed.value)
@@ -106,7 +122,7 @@ onBeforeUnmount(() => {
         <p
           v-if="group.title"
           class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500"
-          :class="collapsed ? 'lg:text-center lg:text-[10px]' : ''"
+          :class="[collapsed ? 'lg:text-center lg:text-[10px]' : '', group !== groups[0] ? 'mt-4' : '']"
         >
           {{ collapsed ? '···' : group.title }}
         </p>
@@ -116,7 +132,7 @@ onBeforeUnmount(() => {
               :to="item.to"
               class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-white focus:ring-2 focus:ring-blue-500/60 focus:outline-none"
               :class="collapsed ? 'lg:justify-center lg:px-0' : ''"
-              :active-class="item.exact ? '' : 'bg-blue-500/15 font-medium text-blue-300'"
+              :active-class="linkActiveClass(item)"
               :exact-active-class="item.exact ? 'bg-blue-500/15 font-medium text-blue-300' : ''"
               :title="collapsed ? item.label : undefined"
             >
