@@ -1,0 +1,182 @@
+[
+  {
+    "name": "Amonium",
+    "formula": "NH₄⁺",
+    "charge": "+1",
+    "description": "Kation poliatomik yang terbentuk ketika amonia menerima proton; hampir semua garam amonium larut dalam air."
+  },
+  {
+    "name": "Hidroksida",
+    "formula": "OH⁻",
+    "charge": "-1",
+    "description": "Anion yang bertanggung jawab atas sifat basa dan terbentuk saat basa melepaskan ion hidroksida."
+  },
+  {
+    "name": "Nitrat",
+    "formula": "NO₃⁻",
+    "charge": "-1",
+    "description": "Anion okso nitrogen yang stabil dan merupakan oksidator; semua garam nitrat larut dalam air."
+  },
+  {
+    "name": "Nitrit",
+    "formula": "NO₂⁻",
+    "charge": "-1",
+    "description": "Anion okso nitrogen yang digunakan dalam garam nitrit dan pengawetan makanan."
+  },
+  {
+    "name": "Sulfat",
+    "formula": "SO₄²⁻",
+    "charge": "-2",
+    "description": "Anion okso sulfur yang banyak ditemukan dalam garam sulfat; sebagian besar larut kecuali barium dan timbal(II) sulfat."
+  },
+  {
+    "name": "Sulfit",
+    "formula": "SO₃²⁻",
+    "charge": "-2",
+    "description": "Anion okso sulfur yang merupakan basa konjugasi dari ion hidrogen sulfit."
+  },
+  {
+    "name": "Karbonat",
+    "formula": "CO₃²⁻",
+    "charge": "-2",
+    "description": "Anion okso karbon yang menjadi dasar garam karbonat dan menghasilkan CO₂ saat bereaksi dengan asam."
+  },
+  {
+    "name": "Bikarbonat",
+    "formula": "HCO₃⁻",
+    "charge": "-1",
+    "description": "Anion yang berperan sebagai penyangga pH dalam darah dan air alami."
+  },
+  {
+    "name": "Fosfat",
+    "formula": "PO₄³⁻",
+    "charge": "-3",
+    "description": "Anion okso fosfor yang merupakan komponen penting pupuk dan senyawa biologis."
+  },
+  {
+    "name": "Hidrogen fosfat",
+    "formula": "HPO₄²⁻",
+    "charge": "-2",
+    "description": "Anion fosfat terprotonasi yang berperan dalam sistem penyangga tubuh."
+  },
+  {
+    "name": "Dihidrogen fosfat",
+    "formula": "H₂PO₄⁻",
+    "charge": "-1",
+    "description": "Anion fosfat dengan dua atom hidrogen, sering ditemukan dalam pupuk."
+  },
+  {
+    "name": "Klorat",
+    "formula": "ClO₃⁻",
+    "charge": "-1",
+    "description": "Anion yang digunakan sebagai oksidator dalam korek api dan bahan peledak."
+  },
+  {
+    "name": "Perklorat",
+    "formula": "ClO₄⁻",
+    "charge": "-1",
+    "description": "Anion perklorat yang bersifat oksidator kuat, terutama dalam suasana asam."
+  },
+  {
+    "name": "Hipoklorit",
+    "formula": "ClO⁻",
+    "charge": "-1",
+    "description": "Anion yang menjadi zat aktif utama dalam pemutih dan disinfektan."
+  },
+  {
+    "name": "Permanganat",
+    "formula": "MnO₄⁻",
+    "charge": "-1",
+    "description": "Anion berwarna ungu yang merupakan oksidator kuat dan sering dipakai dalam titrasi."
+  },
+  {
+    "name": "Dikromat",
+    "formula": "Cr₂O₇²⁻",
+    "charge": "-2",
+    "description": "Anion berwarna oranye yang berperan sebagai oksidator dalam suasana asam."
+  },
+  {
+    "name": "Kromat",
+    "formula": "CrO₄²⁻",
+    "charge": "-2",
+    "description": "Anion berwarna kuning yang banyak digunakan sebagai pigmen."
+  },
+  {
+    "name": "Sianida",
+    "formula": "CN⁻",
+    "charge": "-1",
+    "description": "Anion yang sangat beracun karena mengikat besi dalam enzim sitokrom oksidase."
+  },
+  {
+    "name": "Tiosianat",
+    "formula": "SCN⁻",
+    "charge": "-1",
+    "description": "Anion yang sering dipakai untuk menguji keberadaan ion besi(III)."
+  },
+  {
+    "name": "Asetat",
+    "formula": "CH₃COO⁻",
+    "charge": "-1",
+    "description": "Anion asetat, basa konjugasi dari asam asetat; banyak garamnya mudah larut."
+  },
+  {
+    "name": "Oksalat",
+    "formula": "C₂O₄²⁻",
+    "charge": "-2",
+    "description": "Anion yang dapat membentuk endapan dengan ion kalsium dan digunakan sebagai standar titrasi."
+  },
+  {
+    "name": "Tiosulfat",
+    "formula": "S₂O₃²⁻",
+    "charge": "-2",
+    "description": "Anion yang dipakai dalam fotografi dan sebagai zat pereduksi dalam titrasi iodometri."
+  },
+  {
+    "name": "Borat",
+    "formula": "BO₃³⁻",
+    "charge": "-3",
+    "description": "Anion boron yang ditemukan dalam garam borat dan bahan pengawet."
+  },
+  {
+    "name": "Silikat",
+    "formula": "SiO₃²⁻",
+    "charge": "-2",
+    "description": "Anion penyusun utama mineral dan kaca dengan struktur rantai yang beragam."
+  },
+  {
+    "name": "Peroksida",
+    "formula": "O₂²⁻",
+    "charge": "-2",
+    "description": "Anion dengan ikatan O–O tunggal yang bersifat oksidator, ditemukan dalam hidrogen peroksida."
+  },
+  {
+    "name": "Superoksida",
+    "formula": "O₂⁻",
+    "charge": "-1",
+    "description": "Anion radikal yang sangat reaktif dan ditemukan pada senyawa oksigen alkali."
+  },
+  {
+    "name": "Ozonida",
+    "formula": "O₃⁻",
+    "charge": "-1",
+    "description": "Anion yang terbentuk dari ozon dan bersifat sangat reaktif."
+  },
+  {
+    "name": "Hidronium",
+    "formula": "H₃O⁺",
+    "charge": "+1",
+    "description": "Kation yang terbentuk ketika asam melepaskan proton kepada molekul air."
+  },
+  {
+    "name": "Azida",
+    "formula": "N₃⁻",
+    "charge": "-1",
+    "description": "Anion yang digunakan dalam airbag dan bersifat sangat reaktif."
+  },
+  {
+    "name": "Sianat",
+    "formula": "OCN⁻",
+    "charge": "-1",
+    "description": "Anion pseudohalogen yang ditemukan dalam garam sianat."
+  }
+]

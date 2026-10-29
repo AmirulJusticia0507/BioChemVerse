@@ -441,10 +441,465 @@
           }
         }
       }
+    },
+    "/api/v1/elements": {
+      "get": {
+        "tags": [
+          "elements"
+        ],
+        "summary": "Daftar unsur (tabel periodik)",
+        "description": "Seluruh 118 unsur dengan filter opsional pencarian, kategori, periode, blok, dan fase.",
+        "operationId": "list_elements_api_v1_elements_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cari berdasarkan nama, nama Latin, simbol, atau nomor atom",
+              "examples": [
+                "Fe"
+              ],
+              "title": "Q"
+            },
+            "description": "Cari berdasarkan nama, nama Latin, simbol, atau nomor atom"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter kategori (slug)",
+              "examples": [
+                "transition"
+              ],
+              "title": "Category"
+            },
+            "description": "Filter kategori (slug)"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 7,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter periode (1-7)",
+              "title": "Period"
+            },
+            "description": "Filter periode (1-7)"
+          },
+          {
+            "name": "block",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[spdf]$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter blok (s/p/d/f)",
+              "title": "Block"
+            },
+            "description": "Filter blok (s/p/d/f)"
+          },
+          {
+            "name": "phase",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(solid|liquid|gas|artificial)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fase pada suhu ruang",
+              "title": "Phase"
+            },
+            "description": "Fase pada suhu ruang"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/elements/{identifier}": {
+      "get": {
+        "tags": [
+          "elements"
+        ],
+        "summary": "Detail unsur",
+        "description": "Detail satu unsur berdasarkan simbol (Fe) atau nomor atom (26).",
+        "operationId": "get_element_api_v1_elements__identifier__get",
+        "parameters": [
+          {
+            "name": "identifier",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Identifier"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElementOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unsur tidak ditemukan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "tags": [
+          "elements"
+        ],
+        "summary": "Daftar kategori unsur",
+        "description": "Sepuluh kategori tabel periodik beserta jumlah unsurnya.",
+        "operationId": "list_categories_api_v1_categories_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ions": {
+      "get": {
+        "tags": [
+          "elements"
+        ],
+        "summary": "Daftar ion poliatomik",
+        "description": "Referensi ion poliatomik (kation & anion) beserta muatannya.",
+        "operationId": "list_ions_api_v1_ions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IonListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "CategoryListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryOut"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "data"
+        ],
+        "title": "CategoryListResponse"
+      },
+      "CategoryOut": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug",
+            "description": "Kode kategori",
+            "examples": [
+              "transition"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nama kategori (Indonesia)",
+            "examples": [
+              "Logam Transisi"
+            ]
+          },
+          "element_count": {
+            "type": "integer",
+            "title": "Element Count",
+            "description": "Jumlah unsur dalam kategori",
+            "examples": [
+              38
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "name",
+          "element_count"
+        ],
+        "title": "CategoryOut"
+      },
+      "ElementListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "examples": [
+              118
+            ]
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ElementOut"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "data"
+        ],
+        "title": "ElementListResponse"
+      },
+      "ElementOut": {
+        "properties": {
+          "atomic_number": {
+            "type": "integer",
+            "title": "Atomic Number",
+            "description": "Nomor atom",
+            "examples": [
+              26
+            ]
+          },
+          "symbol": {
+            "type": "string",
+            "title": "Symbol",
+            "description": "Simbol unsur",
+            "examples": [
+              "Fe"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nama Indonesia",
+            "examples": [
+              "Besi"
+            ]
+          },
+          "name_latin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Latin",
+            "description": "Nama Latin",
+            "examples": [
+              "Ferrum"
+            ]
+          },
+          "atomic_mass": {
+            "type": "number",
+            "title": "Atomic Mass",
+            "description": "Massa atom (u)",
+            "examples": [
+              55.845
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CategoryOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Kategori unsur"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period",
+            "description": "Periode",
+            "examples": [
+              4
+            ]
+          },
+          "group": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group",
+            "description": "Golongan",
+            "examples": [
+              8
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Deskripsi singkat (Indonesia)"
+          },
+          "uses": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uses",
+            "description": "Kegunaan utama"
+          },
+          "hazard": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hazard",
+            "description": "Peringatan bahaya"
+          },
+          "properties": {
+            "type": "object",
+            "title": "Properties",
+            "description": "Properti fisika/kimia: melt (K), boil (K), density, electronegativity, ionization, atomicRadius, covalentRadius, molarHeat, phase, block, shells, oxidationStates, appearance, discoveredBy, namedBy, yearDiscovered"
+          }
+        },
+        "type": "object",
+        "required": [
+          "atomic_number",
+          "symbol",
+          "name",
+          "atomic_mass",
+          "properties"
+        ],
+        "title": "ElementOut"
+      },
       "ErrorDetail": {
         "properties": {
           "status": {
@@ -543,6 +998,82 @@
           "status"
         ],
         "title": "HealthResponse"
+      },
+      "IonListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "examples": [
+              30
+            ]
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/IonOut"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "data"
+        ],
+        "title": "IonListResponse"
+      },
+      "IonOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "examples": [
+              "Amonium"
+            ]
+          },
+          "formula": {
+            "type": "string",
+            "title": "Formula",
+            "description": "Rumus ion",
+            "examples": [
+              "NH₄⁺"
+            ]
+          },
+          "charge": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Charge",
+            "description": "Muatan",
+            "examples": [
+              "+1"
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Penjelasan (Indonesia)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "formula"
+        ],
+        "title": "IonOut"
       },
       "LoginRequest": {
         "properties": {
@@ -988,6 +1519,10 @@
     {
       "name": "progress",
       "description": "Progres belajar per modul (butuh token). Skor & status selesai per pengguna."
+    },
+    {
+      "name": "elements",
+      "description": "Tabel periodik: 118 unsur (nama Indonesia), kategori, dan ion poliatomik."
     }
   ]
 }

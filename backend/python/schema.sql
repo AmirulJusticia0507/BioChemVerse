@@ -26,3 +26,34 @@ CREATE TABLE IF NOT EXISTS user_progress (
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_progress_user ON user_progress (user_id);
+
+-- Data referensi kimia (impor dari proyek ChemSphere — lihat scripts/import-chemsphere-data.mjs)
+
+CREATE TABLE IF NOT EXISTS categories (
+    slug text PRIMARY KEY,
+    name text NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS elements (
+    atomic_number integer PRIMARY KEY,
+    symbol        varchar(10) UNIQUE NOT NULL,
+    name          varchar(100) NOT NULL,
+    name_latin    varchar(100),
+    atomic_mass   numeric(10, 4) NOT NULL,
+    category_slug text REFERENCES categories (slug),
+    period        smallint,
+    group_no      smallint,
+    description   text,
+    uses          text,
+    hazard        text,
+    properties    jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE INDEX IF NOT EXISTS idx_elements_category ON elements (category_slug);
+
+CREATE TABLE IF NOT EXISTS polyatomic_ions (
+    name        varchar(100) PRIMARY KEY,
+    formula     varchar(50) NOT NULL,
+    charge      varchar(20),
+    description text
+);

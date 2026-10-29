@@ -37,6 +37,10 @@ Konfigurasi dibaca dari environment / file `.env` (salin dari `.env.example` di 
 | GET | `/api/v1/progress` | progress | Semua progres modul pengguna aktif | 200 | 401 |
 | GET | `/api/v1/progress/{module}` | progress | Progres satu modul | 200 | 400/401/404 |
 | PUT | `/api/v1/progress/{module}` | progress | Upsert progres (score/completed) | 200 | 400/401/422 |
+| GET | `/api/v1/elements` | elements | Daftar 118 unsur + filter (q/kategori/periode/blok/fase) | 200 | 422 |
+| GET | `/api/v1/elements/{simbol\|nomor}` | elements | Detail satu unsur (mis. `Fe` atau `26`) | 200 | 404 |
+| GET | `/api/v1/categories` | elements | 10 kategori tabel periodik + jumlah unsur | 200 | — |
+| GET | `/api/v1/ions` | elements | 30 ion poliatomik (rumus & muatan) | 200 | — |
 
 ### 1. `GET /` — Info API
 
@@ -133,6 +137,85 @@ curl http://localhost:8000/api/v1/modules
       ]
     }
   ]
+}
+```
+
+---
+
+## Tabel Periodik (ChemSphere)
+
+Data referensi 118 unsur (nama Indonesia), 10 kategori, dan 30 ion poliatomik.
+Di-seed otomatis saat startup dari `backend/python/data/*.json`.
+
+### `GET /api/v1/elements` → 200
+
+Parameter query (semua opsional, boleh dikombinasikan):
+
+| Param | Tipe | Contoh | Keterangan |
+| --- | --- | --- | --- |
+| `q` | string | `Fe` / `26` | Nama, nama Latin, simbol, atau nomor atom |
+| `category` | string | `transition` | Slug kategori |
+| `period` | int 1-7 | `4` | Periode |
+| `block` | `s\|p\|d\|f` | `d` | Blok elektron |
+| `phase` | `solid\|liquid\|gas\|artificial` | `solid` | Fase pada suhu ruang |
+
+```bash
+curl "http://localhost:8000/api/v1/elements?q=Fe"
+```
+
+```json
+{
+  "total": 2,
+  "data": [
+    {
+      "atomic_number": 26,
+      "symbol": "Fe",
+      "name": "Besi",
+      "name_latin": "Ferrum",
+      "atomic_mass": 55.845,
+      "category": { "slug": "transition", "name": "Logam Transisi", "element_count": 38 },
+      "period": 4,
+      "group": 8,
+      "description": "Logam transisi paling banyak digunakan; inti Bumi sebagian besar tersusun dari besi.",
+      "uses": "Konstruksi, baja, kendaraan, dan hemoglobin.",
+      "hazard": "Umumnya aman; kelebihan zat besi dapat merusak organ.",
+      "properties": { "melt": 1811, "boil": 3134, "block": "d", "phase": "Solid", "shells": [2, 8, 14, 2] }
+    }
+  ]
+}
+```
+
+### `GET /api/v1/elements/{simbol|nomor}` → 200 / 404
+
+```bash
+curl http://localhost:8000/api/v1/elements/Fe   # atau /api/v1/elements/26
+```
+
+404 bila unsur tidak dikenal: `{ "detail": "Unsur 'Xx' tidak ditemukan" }`.
+
+### `GET /api/v1/categories` → 200
+
+```bash
+curl http://localhost:8000/api/v1/categories
+```
+
+```json
+{
+  "total": 10,
+  "data": [{ "slug": "alkali", "name": "Logam Alkali", "element_count": 6 }]
+}
+```
+
+### `GET /api/v1/ions` → 200
+
+```bash
+curl http://localhost:8000/api/v1/ions
+```
+
+```json
+{
+  "total": 30,
+  "data": [{ "name": "Amonium", "formula": "NH₄⁺", "charge": "+1", "description": "Kation poliatomik ..." }]
 }
 ```
 

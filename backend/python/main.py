@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 import cache
@@ -12,8 +12,14 @@ import db
 from auth import create_access_token, get_current_user, hash_password, verify_password
 from config import get_settings
 from models import (
+    CategoryListResponse,
+    CategoryOut,
+    ElementListResponse,
+    ElementOut,
     ErrorResponse,
     HealthResponse,
+    IonListResponse,
+    IonOut,
     LoginRequest,
     ModuleListResponse,
     ModuleOut,
@@ -26,6 +32,7 @@ from models import (
     TokenResponse,
     UserOut,
 )
+import seed
 
 settings = get_settings()
 
@@ -42,6 +49,10 @@ TAGS_METADATA = [
     {
         "name": "progress",
         "description": "Progres belajar per modul (butuh token). Skor & status selesai per pengguna.",
+    },
+    {
+        "name": "elements",
+        "description": "Tabel periodik: 118 unsur (nama Indonesia), kategori, dan ion poliatomik.",
     },
 ]
 
@@ -85,7 +96,8 @@ MODULES = [
 async def lifespan(app: FastAPI):
     """Siapkan koneksi database & Redis saat startup, tutup saat shutdown."""
     await db.ensure_database(settings.database_url)
-    await db.connect(settings.database_url)
+    pool = await db.connect(settings.database_url)
+    await seed.ensure_seeded(pool)
     await cache.connect(settings.redis_url)
     yield
     await cache.disconnect()
@@ -319,3 +331,96 @@ async def upsert_progress(
         completed=payload.completed,
     )
     return _progress_out(row)
+
+
+# --- Tabel periodik (ChemSphere) -------------------------------------------
+
+
+def _element_out(row: dict, counts: dict[str, int] | None = None) -> dict:
+    """Sesuaikan baris database dengan skema ElementOut."""
+    category = None
+    if row.get("category_slug"):
+        category = {
+            "slug": row["category_slug"],
+            "name": row.get("category_name") or row["category_slug"],
+            "element_count": (counts or {}).get(row["category_slug"], 0),
+        }
+    return {
+        "atomic_number": row["atomic_number"],
+        "symbol": row["symbol"],
+        "name": row["name"],
+        "name_latin": row.get("name_latin"),
+        "atomic_mass": float(row["atomic_mass"]),
+        "category": category,
+        "period": row.get("period"),
+        "group": row.get("group_no"),
+        "description": row.get("description"),
+        "uses": row.get("uses"),
+        "hazard": row.get("hazard"),
+        "properties": row.get("properties") or {},
+    }
+
+
+@app.get(
+    "/api/v1/elements",
+    tags=["elements"],
+    response_model=ElementListResponse,
+    summary="Daftar unsur (tabel periodik)",
+)
+async def list_elements(
+    q: str | None = Query(
+        None, min_length=1, max_length=100,
+        description="Cari berdasarkan nama, nama Latin, simbol, atau nomor atom",
+        examples=["Fe"],
+    ),
+    category: str | None = Query(None, description="Filter kategori (slug)", examples=["transition"]),
+    period: int | None = Query(None, ge=1, le=7, description="Filter periode (1-7)"),
+    block: str | None = Query(None, pattern="^[spdf]$", description="Filter blok (s/p/d/f)"),
+    phase: str | None = Query(
+        None, pattern="^(solid|liquid|gas|artificial)$", description="Fase pada suhu ruang"
+    ),
+):
+    """Seluruh 118 unsur dengan filter opsional pencarian, kategori, periode, blok, dan fase."""
+    rows = await db.list_elements(q=q, category=category, period=period, block=block, phase=phase)
+    counts = {c["slug"]: c["element_count"] for c in await db.list_categories()}
+    return {"total": len(rows), "data": [_element_out(row, counts) for row in rows]}
+
+
+@app.get(
+    "/api/v1/elements/{identifier}",
+    tags=["elements"],
+    response_model=ElementOut,
+    responses={404: {"model": ErrorResponse, "description": "Unsur tidak ditemukan"}},
+    summary="Detail unsur",
+)
+async def get_element(identifier: str):
+    """Detail satu unsur berdasarkan simbol (Fe) atau nomor atom (26)."""
+    row = await db.get_element(identifier)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"Unsur '{identifier}' tidak ditemukan")
+    counts = {c["slug"]: c["element_count"] for c in await db.list_categories()}
+    return _element_out(row, counts)
+
+
+@app.get(
+    "/api/v1/categories",
+    tags=["elements"],
+    response_model=CategoryListResponse,
+    summary="Daftar kategori unsur",
+)
+async def list_categories():
+    """Sepuluh kategori tabel periodik beserta jumlah unsurnya."""
+    rows = await db.list_categories()
+    return {"total": len(rows), "data": rows}
+
+
+@app.get(
+    "/api/v1/ions",
+    tags=["elements"],
+    response_model=IonListResponse,
+    summary="Daftar ion poliatomik",
+)
+async def list_ions():
+    """Referensi ion poliatomik (kation & anion) beserta muatannya."""
+    rows = await db.list_ions()
+    return {"total": len(rows), "data": rows}

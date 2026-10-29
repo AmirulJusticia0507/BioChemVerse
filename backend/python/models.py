@@ -93,3 +93,56 @@ class ProgressListResponse(BaseModel):
 class ProgressUpdateRequest(BaseModel):
     score: int | None = Field(None, ge=0, le=1_000_000, description="Skor baru; kosongkan agar tetap")
     completed: bool | None = Field(None, description="Status selesai; kosongkan agar tetap")
+
+
+# --- Tabel periodik (ChemSphere) -------------------------------------------
+
+
+class CategoryOut(BaseModel):
+    slug: str = Field(..., examples=["transition"], description="Kode kategori")
+    name: str = Field(..., examples=["Logam Transisi"], description="Nama kategori (Indonesia)")
+    element_count: int = Field(..., examples=[38], description="Jumlah unsur dalam kategori")
+
+
+class CategoryListResponse(BaseModel):
+    total: int
+    data: list[CategoryOut]
+
+
+class ElementOut(BaseModel):
+    atomic_number: int = Field(..., examples=[26], description="Nomor atom")
+    symbol: str = Field(..., examples=["Fe"], description="Simbol unsur")
+    name: str = Field(..., examples=["Besi"], description="Nama Indonesia")
+    name_latin: str | None = Field(None, examples=["Ferrum"], description="Nama Latin")
+    atomic_mass: float = Field(..., examples=[55.845], description="Massa atom (u)")
+    category: CategoryOut | None = Field(None, description="Kategori unsur")
+    period: int | None = Field(None, examples=[4], description="Periode")
+    group: int | None = Field(None, examples=[8], description="Golongan")
+    description: str | None = Field(None, description="Deskripsi singkat (Indonesia)")
+    uses: str | None = Field(None, description="Kegunaan utama")
+    hazard: str | None = Field(None, description="Peringatan bahaya")
+    properties: dict = Field(
+        ...,
+        description=(
+            "Properti fisika/kimia: melt (K), boil (K), density, electronegativity, "
+            "ionization, atomicRadius, covalentRadius, molarHeat, phase, block, "
+            "shells, oxidationStates, appearance, discoveredBy, namedBy, yearDiscovered"
+        ),
+    )
+
+
+class ElementListResponse(BaseModel):
+    total: int = Field(..., examples=[118])
+    data: list[ElementOut]
+
+
+class IonOut(BaseModel):
+    name: str = Field(..., examples=["Amonium"])
+    formula: str = Field(..., examples=["NH₄⁺"], description="Rumus ion")
+    charge: str | None = Field(None, examples=["+1"], description="Muatan")
+    description: str | None = Field(None, description="Penjelasan (Indonesia)")
+
+
+class IonListResponse(BaseModel):
+    total: int = Field(..., examples=[30])
+    data: list[IonOut]

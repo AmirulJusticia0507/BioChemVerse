@@ -2,13 +2,25 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from typing import Any
 
 import asyncpg
 
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 
 _pool: asyncpg.Pool | None = None
+
+
+async def _init_connection(conn: Any) -> None:
+    """Codec json/jsonb: kirim & terima sebagai Python dict/list (bukan string)."""
+    await conn.set_type_codec(
+        "json", encoder=json.dumps, decoder=json.loads, schema="pg_catalog"
+    )
+    await conn.set_type_codec(
+        "jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog"
+    )
 
 
 async def ensure_database(database_url: str) -> None:
@@ -26,12 +38,15 @@ async def ensure_database(database_url: str) -> None:
         await conn.close()
 
 
-async def connect(database_url: str) -> None:
-    """Buka connection pool dan terapkan skema dari schema.sql."""
+async def connect(database_url: str) -> asyncpg.Pool:
+    """Buka connection pool dan terapkan skema dari schema.sql. Mengembalikan pool."""
     global _pool
-    _pool = await asyncpg.create_pool(dsn=database_url, min_size=1, max_size=5)
+    _pool = await asyncpg.create_pool(
+        dsn=database_url, min_size=1, max_size=5, init=_init_connection
+    )
     async with _pool.acquire() as conn:
         await conn.execute(SCHEMA_PATH.read_text(encoding="utf-8"))
+    return _pool
 
 
 async def disconnect() -> None:
@@ -146,3 +161,96 @@ async def upsert_progress(
         completed,
     )
     return dict(record)
+
+
+# --- Data referensi kimia (tabel periodik) ---------------------------------
+
+_ELEMENT_SELECT = """
+    SELECT e.atomic_number, e.symbol, e.name, e.name_latin, e.atomic_mass,
+           e.category_slug, e.period, e.group_no, e.description, e.uses, e.hazard,
+           e.properties, c.name AS category_name
+    FROM elements e
+    LEFT JOIN categories c ON c.slug = e.category_slug
+"""
+
+
+async def list_elements(
+    q: str | None = None,
+    category: str | None = None,
+    period: int | None = None,
+    block: str | None = None,
+    phase: str | None = None,
+) -> list[dict]:
+    """Semua unsur dengan filter opsional (pencarian, kategori, periode, blok, fase)."""
+    if _pool is None:
+        return []
+
+    clauses: list[str] = []
+    params: list[object] = []
+
+    def add(fragment: str, value: object) -> str:
+        params.append(value)
+        return fragment.replace("?", f"${len(params)}")
+
+    if q:
+        like = f"%{q}%"
+        params.extend([like, like, like])
+        first, second, third = f"${len(params) - 2}", f"${len(params) - 1}", f"${len(params)}"
+        condition = (
+            f"(e.name ILIKE {first} OR e.name_latin ILIKE {second} OR e.symbol ILIKE {third}"
+        )
+        if q.isdigit():
+            params.append(int(q))
+            condition += f" OR e.atomic_number = ${len(params)}"
+        clauses.append(condition + ")")
+    if category:
+        clauses.append(add("e.category_slug = ?", category))
+    if period:
+        clauses.append(add("e.period = ?", period))
+    if block:
+        clauses.append(add("e.properties->>'block' = ?", block.lower()))
+    if phase:
+        clauses.append(add("e.properties->>'phase' = ?", phase.capitalize()))
+
+    where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+    records = await _pool.fetch(_ELEMENT_SELECT + where + " ORDER BY e.atomic_number", *params)
+    return [dict(record) for record in records]
+
+
+async def get_element(identifier: str) -> dict | None:
+    """Cari unsur berdasarkan simbol (mis. 'Fe') atau nomor atom (mis. '26')."""
+    if _pool is None:
+        return None
+    if identifier.isdigit():
+        record = await _pool.fetchrow(
+            _ELEMENT_SELECT + " WHERE e.atomic_number = $1", int(identifier)
+        )
+    else:
+        record = await _pool.fetchrow(
+            _ELEMENT_SELECT + " WHERE lower(e.symbol) = lower($1)", identifier.strip()
+        )
+    return dict(record) if record else None
+
+
+async def list_categories() -> list[dict]:
+    if _pool is None:
+        return []
+    records = await _pool.fetch(
+        """
+        SELECT c.slug, c.name, count(e.atomic_number) AS element_count
+        FROM categories c
+        LEFT JOIN elements e ON e.category_slug = c.slug
+        GROUP BY c.slug, c.name
+        ORDER BY min(e.atomic_number)
+        """
+    )
+    return [dict(record) for record in records]
+
+
+async def list_ions() -> list[dict]:
+    if _pool is None:
+        return []
+    records = await _pool.fetch(
+        "SELECT name, formula, charge, description FROM polyatomic_ions ORDER BY name"
+    )
+    return [dict(record) for record in records]

@@ -35,26 +35,54 @@ function grab(name) {
   const close = open === '[' ? ']' : '}'
 
   let depth = 0
-  let quote = null
-  let escaped = false
+  let mode = 'code' // code | line | block | sq | dq | bt
   for (let p = start; p < src.length; p++) {
     const ch = src[p]
-    if (quote) {
-      if (escaped) escaped = false
-      else if (ch === '\\') escaped = true
-      else if (ch === quote) quote = null
+    const next = src[p + 1]
+
+    if (mode === 'line') {
+      if (ch === '\n') mode = 'code'
       continue
     }
-    if (ch === "'" || ch === '"') {
-      quote = ch
+    if (mode === 'block') {
+      if (ch === '*' && next === '/') {
+        mode = 'code'
+        p++
+      }
       continue
     }
-    if (ch === open) depth++
+    if (mode === 'sq' || mode === 'dq' || mode === 'bt') {
+      if (ch === '\\') {
+        p++
+        continue
+      }
+      if ((mode === 'sq' && ch === "'") || (mode === 'dq' && ch === '"') || (mode === 'bt' && ch === '`')) {
+        mode = 'code'
+      }
+      continue
+    }
+
+    // mode === 'code'
+    if (ch === '/' && next === '/') {
+      mode = 'line'
+      p++
+      continue
+    }
+    if (ch === '/' && next === '*') {
+      mode = 'block'
+      p++
+      continue
+    }
+    if (ch === "'") mode = 'sq'
+    else if (ch === '"') mode = 'dq'
+    else if (ch === '`') mode = 'bt'
+    else if (ch === open) depth++
     else if (ch === close) {
       depth--
       if (depth === 0) {
-        // Literal murni (array of array / object of string) — aman dieval.
-        return eval(src.slice(start, p + 1))
+        // Bungkus kurung agar object literal tidak dianggap block statement (mode strict ESM).
+        const text = src.slice(start, p + 1)
+        return eval('(' + text + ')')
       }
     }
   }

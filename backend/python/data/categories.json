@@ -1,0 +1,42 @@
+[
+  {
+    "slug": "alkali",
+    "name": "Logam Alkali"
+  },
+  {
+    "slug": "alkaline",
+    "name": "Logam Alkali Tanah"
+  },
+  {
+    "slug": "transition",
+    "name": "Logam Transisi"
+  },
+  {
+    "slug": "post-transition",
+    "name": "Logam Pasca-transisi"
+  },
+  {
+    "slug": "metalloid",
+    "name": "Metaloid"
+  },
+  {
+    "slug": "nonmetal",
+    "name": "Nonlogam"
+  },
+  {
+    "slug": "halogen",
+    "name": "Halogen"
+  },
+  {
+    "slug": "noble-gas",
+    "name": "Gas Mulia"
+  },
+  {
+    "slug": "lanthanide",
+    "name": "Lantanida"
+  },
+  {
+    "slug": "actinide",
+    "name": "Aktinida"
+  }
+]
