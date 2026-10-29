@@ -623,6 +623,20 @@ const regions = [
     ],
   },
   {
+    id: 'serat-otot',
+    label: 'Struktur Serat Otot',
+    desc: 'Otot rangka tersusun berlapis dari bundel besar hingga protein kontraktil mikroskopis.',
+    items: [
+      'Epimisium: jaringan ikat yang membungkus seluruh otot',
+      'Perimisium: membungkus bundel serat (fasikulus)',
+      'Endomisium: membungkus tiap serat otot',
+      'Miofibril: struktur kontraktil di dalam serat otot',
+      'Aktin & miosin: filamen tipis dan tebal penggerak kontraksi',
+    ],
+    tint: `fill-red-500/45 stroke-red-200 ${filled}`,
+    d: [],
+  },
+  {
     id: 'payudara',
     label: 'Payudara',
     desc: 'Kelenjar susu (mamma) di jaringan adiposa toraks, yang membesar karena estrogen dan progesteron.',
