@@ -11,6 +11,16 @@ const router = createRouter({
       component: () => import('../views/ModulesView.vue'),
     },
     {
+      path: '/tabel-periodik',
+      name: 'periodic-table',
+      component: () => import('../views/PeriodicTableView.vue'),
+    },
+    {
+      path: '/tabel-periodik/:symbol',
+      name: 'element-detail',
+      component: () => import('../views/ElementDetailView.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),

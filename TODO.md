@@ -12,7 +12,7 @@
 - [x] completed | medium | Frontend: halaman Login/Register terhubung API
 - [x] completed | medium | Frontend: tampil progres modul saat login
 - [x] completed | high | Backend: data 118 unsur ChemSphere + endpoint elements/kategori/ion
-- [ ] pending | high | Frontend: halaman Tabel Periodik + detail unsur
+- [x] completed | high | Frontend: halaman Tabel Periodik + detail unsur
 - [x] completed | medium | Anatomi: tampilan tubuh wanita (siluet, payudara, reproduksi) pada kerangka anatomi
 - [x] completed | medium | Anatomi: karakter 3D interaktif pria dan wanita
 - [x] completed | medium | Anatomi: gaya atlas organ untuk model 3D pria dan wanita
