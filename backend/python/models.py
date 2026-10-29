@@ -205,3 +205,25 @@ class QuizAttemptOut(BaseModel):
 class QuizAttemptListResponse(BaseModel):
     total: int
     data: list[QuizAttemptOut]
+
+
+# --- Bookmark unsur ---------------------------------------------------------
+
+
+class BookmarkCreateRequest(BaseModel):
+    atomic_number: int = Field(..., ge=1, le=118, examples=[26])
+    note: str | None = Field(None, max_length=255, description="Catatan singkat (opsional)")
+
+
+class BookmarkOut(BaseModel):
+    atomic_number: int
+    symbol: str
+    name: str
+    category_slug: str | None = None
+    note: str | None = None
+    created_at: datetime
+
+
+class BookmarkListResponse(BaseModel):
+    total: int
+    data: list[BookmarkOut]

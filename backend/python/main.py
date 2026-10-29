@@ -14,6 +14,9 @@ import quiz
 from auth import create_access_token, get_current_user, hash_password, verify_password
 from config import get_settings
 from models import (
+    BookmarkCreateRequest,
+    BookmarkListResponse,
+    BookmarkOut,
     CategoryListResponse,
     CategoryOut,
     ElementListResponse,
@@ -64,6 +67,10 @@ TAGS_METADATA = [
     {
         "name": "quiz",
         "description": "Kuis tabel periodik: soal dibangkitkan server-side, skor & riwayat tersimpan.",
+    },
+    {
+        "name": "bookmarks",
+        "description": "Bookmark unsur per pengguna (butuh token).",
     },
 ]
 
@@ -571,3 +578,68 @@ async def list_quiz_attempts(
     """Riwayat percobaan kuis pengguna aktif, terbaru lebih dulu."""
     rows = await db.list_quiz_attempts(str(current_user["id"]), limit)
     return {"total": len(rows), "data": rows}
+
+
+# --- Bookmark unsur ---------------------------------------------------------
+
+
+@app.get(
+    "/api/v1/bookmarks",
+    tags=["bookmarks"],
+    response_model=BookmarkListResponse,
+    responses={401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"}},
+    summary="Daftar unsur yang dibookmark",
+)
+async def list_bookmarks(current_user: dict = Depends(get_current_user)):
+    """Semua bookmark pengguna aktif, terbaru lebih dulu."""
+    rows = await db.list_bookmarks(str(current_user["id"]))
+    return {"total": len(rows), "data": rows}
+
+
+@app.post(
+    "/api/v1/bookmarks",
+    tags=["bookmarks"],
+    response_model=BookmarkOut,
+    status_code=201,
+    responses={
+        401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"},
+        404: {"model": ErrorResponse, "description": "Unsur tidak ditemukan"},
+        409: {"model": ErrorResponse, "description": "Unsur sudah dibookmark"},
+    },
+    summary="Tambah bookmark unsur",
+)
+async def create_bookmark(
+    payload: BookmarkCreateRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Simpan satu unsur ke daftar bookmark (idempoten ditolak 409 bila duplikat)."""
+    try:
+        row = await db.add_bookmark(
+            str(current_user["id"]), payload.atomic_number, payload.note
+        )
+    except LookupError:
+        raise HTTPException(status_code=409, detail="Unsur ini sudah dibookmark") from None
+    if row is None:
+        raise HTTPException(status_code=404, detail="Unsur tidak ditemukan")
+    return row
+
+
+@app.delete(
+    "/api/v1/bookmarks/{atomic_number}",
+    tags=["bookmarks"],
+    status_code=204,
+    responses={
+        401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"},
+        404: {"model": ErrorResponse, "description": "Bookmark tidak ditemukan"},
+    },
+    summary="Hapus bookmark unsur",
+)
+async def delete_bookmark(
+    atomic_number: int,
+    current_user: dict = Depends(get_current_user),
+):
+    """Hapus bookmark berdasarkan nomor atom."""
+    deleted = await db.delete_bookmark(str(current_user["id"]), atomic_number)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Bookmark tidak ditemukan")
+    return Response(status_code=204)

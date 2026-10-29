@@ -901,10 +901,286 @@
           }
         }
       }
+    },
+    "/api/v1/bookmarks": {
+      "get": {
+        "tags": [
+          "bookmarks"
+        ],
+        "summary": "Daftar unsur yang dibookmark",
+        "description": "Semua bookmark pengguna aktif, terbaru lebih dulu.",
+        "operationId": "list_bookmarks_api_v1_bookmarks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookmarkListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "bookmarks"
+        ],
+        "summary": "Tambah bookmark unsur",
+        "description": "Simpan satu unsur ke daftar bookmark (idempoten ditolak 409 bila duplikat).",
+        "operationId": "create_bookmark_api_v1_bookmarks_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookmarkCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookmarkOut"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unsur tidak ditemukan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Unsur sudah dibookmark",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/bookmarks/{atomic_number}": {
+      "delete": {
+        "tags": [
+          "bookmarks"
+        ],
+        "summary": "Hapus bookmark unsur",
+        "description": "Hapus bookmark berdasarkan nomor atom.",
+        "operationId": "delete_bookmark_api_v1_bookmarks__atomic_number__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "atomic_number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Atomic Number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bookmark tidak ditemukan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "BookmarkCreateRequest": {
+        "properties": {
+          "atomic_number": {
+            "type": "integer",
+            "maximum": 118.0,
+            "minimum": 1.0,
+            "title": "Atomic Number",
+            "examples": [
+              26
+            ]
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note",
+            "description": "Catatan singkat (opsional)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "atomic_number"
+        ],
+        "title": "BookmarkCreateRequest"
+      },
+      "BookmarkListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/BookmarkOut"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "data"
+        ],
+        "title": "BookmarkListResponse"
+      },
+      "BookmarkOut": {
+        "properties": {
+          "atomic_number": {
+            "type": "integer",
+            "title": "Atomic Number"
+          },
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Slug"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "atomic_number",
+          "symbol",
+          "name",
+          "created_at"
+        ],
+        "title": "BookmarkOut"
+      },
       "CategoryListResponse": {
         "properties": {
           "total": {
@@ -2031,6 +2307,10 @@
     {
       "name": "quiz",
       "description": "Kuis tabel periodik: soal dibangkitkan server-side, skor & riwayat tersimpan."
+    },
+    {
+      "name": "bookmarks",
+      "description": "Bookmark unsur per pengguna (butuh token)."
     }
   ]
 }

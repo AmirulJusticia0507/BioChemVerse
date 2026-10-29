@@ -71,3 +71,13 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user ON quiz_attempts (user_id, created_at DESC);
+
+-- Bookmark unsur per pengguna
+CREATE TABLE IF NOT EXISTS bookmarks (
+    id             bigserial PRIMARY KEY,
+    user_id        uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    atomic_number  integer NOT NULL REFERENCES elements (atomic_number) ON DELETE CASCADE,
+    note           varchar(255),
+    created_at     timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (user_id, atomic_number)
+);

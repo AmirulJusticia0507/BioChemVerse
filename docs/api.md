@@ -44,6 +44,9 @@ Konfigurasi dibaca dari environment / file `.env` (salin dari `.env.example` di 
 | POST | `/api/v1/quiz/start` | quiz | Bangkitkan soal kuis (kunci disimpan server-side) | 200 | 400/401/422/503 |
 | POST | `/api/v1/quiz/submit` | quiz | Nilai jawaban + simpan percobaan (sesi sekali pakai) | 200 | 400/401/403/404 |
 | GET | `/api/v1/quiz/attempts` | quiz | Riwayat percobaan kuis (`limit` 1–100) | 200 | 401 |
+| GET | `/api/v1/bookmarks` | bookmarks | Daftar unsur yang dibookmark | 200 | 401 |
+| POST | `/api/v1/bookmarks` | bookmarks | Tambah bookmark unsur | 201 | 401/409/422 |
+| DELETE | `/api/v1/bookmarks/{nomor}` | bookmarks | Hapus bookmark berdasarkan nomor atom | 204 | 401/404 |
 
 ### 1. `GET /` — Info API
 
@@ -390,4 +393,48 @@ curl -X POST http://localhost:8000/api/v1/quiz/submit \
 
 ---
 
+## Bookmark Unsur
 
+Semua endpoint butuh token.
+
+### `POST /api/v1/bookmarks` → 201
+
+```bash
+curl -X POST http://localhost:8000/api/v1/bookmarks \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"atomic_number": 26, "note": "Logam transisi"}'
+```
+
+```json
+{ "atomic_number": 26, "symbol": "Fe", "name": "Besi", "note": "Logam transisi",
+  "created_at": "2026-10-29T04:53:00+00:00" }
+```
+
+`409` sudah dibookmark · `422` `atomic_number` di luar `1–118`.
+
+### `GET /api/v1/bookmarks` → 200
+
+```json
+{ "total": 2, "data": [ { "atomic_number": 8, "symbol": "O", "name": "Oksigen", "note": null, "created_at": "…" } ] }
+```
+
+### `DELETE /api/v1/bookmarks/{nomor}` → 204
+
+`404` bila bookmark tidak ada.
+
+---
+
+- **Base URL:** `http://localhost:8000`
+- **Format:** JSON, UTF-8
+- **CORS:** izin dibaca dari `CORS_ORIGINS` (default `http://localhost:5173`, `http://localhost:3000`). Mode development (`ENV` selain `production`/`staging`) juga mengizinkan semua origin `http://localhost:<port apa pun>` & `http://127.0.0.1:<port>` — misal Vite yang pindah ke `:5174`.
+- **Kode status:** `200` sukses · `503` dependency tidak siap · `404` path tidak ditemukan · `422` body/parameter tidak valid
+- **Skema error standar:** `{"detail": "..."}`
+
+## Regenerasi Snapshot Spec
+
+Jalankan setelah mengubah endpoint agar `docs/openapi.json` selalu sinkron:
+
+```bash
+cd backend/python
+python -c "import json; from main import app; open(r'../../docs/openapi.json','w',encoding='utf-8').write(json.dumps(app.openapi(), indent=2, ensure_ascii=False))"
+```

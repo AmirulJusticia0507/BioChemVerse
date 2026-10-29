@@ -306,3 +306,55 @@ async def list_quiz_attempts(user_id: str, limit: int = 20) -> list[dict]:
         limit,
     )
     return [dict(record) for record in records]
+
+
+# --- Bookmark unsur ---------------------------------------------------------
+
+_BOOKMARK_SELECT = """
+    SELECT b.atomic_number, b.note, b.created_at,
+           e.symbol, e.name, e.category_slug
+    FROM bookmarks b
+    JOIN elements e ON e.atomic_number = b.atomic_number
+"""
+
+
+async def list_bookmarks(user_id: str) -> list[dict]:
+    records = await _pool.fetch(
+        _BOOKMARK_SELECT + " WHERE b.user_id = $1 ORDER BY b.created_at DESC", user_id
+    )
+    return [dict(record) for record in records]
+
+
+async def add_bookmark(user_id: str, atomic_number: int, note: str | None) -> dict | None:
+    """Tambah bookmark; None bila unsur tidak ada atau sudah dibookmark (409 di route)."""
+    exists = await _pool.fetchval("SELECT 1 FROM elements WHERE atomic_number = $1", atomic_number)
+    if not exists:
+        return None
+    record = await _pool.fetchrow(
+        """
+        INSERT INTO bookmarks (user_id, atomic_number, note)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (user_id, atomic_number) DO NOTHING
+        RETURNING atomic_number
+        """,
+        user_id,
+        atomic_number,
+        note,
+    )
+    if record is None:
+        raise LookupError("sudah dibookmark")
+    row = await _pool.fetchrow(
+        _BOOKMARK_SELECT + " WHERE b.user_id = $1 AND b.atomic_number = $2",
+        user_id,
+        atomic_number,
+    )
+    return dict(row)
+
+
+async def delete_bookmark(user_id: str, atomic_number: int) -> bool:
+    result = await _pool.execute(
+        "DELETE FROM bookmarks WHERE user_id = $1 AND atomic_number = $2",
+        user_id,
+        atomic_number,
+    )
+    return result.split()[-1] != "0"

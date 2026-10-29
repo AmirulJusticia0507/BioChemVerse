@@ -2,15 +2,41 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '../api/client.js'
+import { useAuth } from '../composables/useAuth.js'
+import { useBookmarks } from '../composables/useBookmarks.js'
 import { styleForCategory } from '../data/categories.js'
 
 const route = useRoute()
+const { isLoggedIn, logout } = useAuth()
+const { isBookmarked, busy, load: loadBookmarks, toggle } = useBookmarks()
 
 const element = ref(null)
 const loading = ref(true)
 const error = ref('')
+const bookmarkError = ref('')
 
 const style = computed(() => styleForCategory(element.value?.category?.slug))
+const bookmarked = computed(() =>
+  element.value ? isBookmarked(element.value.atomic_number) : false,
+)
+const bookmarkBusy = computed(() =>
+  element.value ? busy.value.has(element.value.atomic_number) : false,
+)
+
+async function onToggleBookmark() {
+  if (!element.value) return
+  bookmarkError.value = ''
+  try {
+    await toggle(element.value)
+  } catch (e) {
+    if (e.status === 401) {
+      logout()
+      bookmarkError.value = 'Sesi berakhir — silakan masuk kembali untuk menyimpan bookmark.'
+    } else {
+      bookmarkError.value = e.message
+    }
+  }
+}
 
 /** Konversi Kelvin → Celsius (properti disimpan dalam Kelvin). */
 function toCelsius(kelvin) {
@@ -72,6 +98,12 @@ async function load(symbol) {
 }
 
 onMounted(() => load(route.params.symbol))
+watch(isLoggedIn, (loggedIn) => {
+  if (!loggedIn || !element.value) return
+  loadBookmarks().catch((e) => {
+    if (e.status === 401) logout()
+  })
+})
 watch(
   () => route.params.symbol,
   (symbol) => {
@@ -131,6 +163,34 @@ watch(
             Periode {{ element.period }} · Golongan {{ element.group }}
           </p>
           <p class="mt-4 text-sm leading-relaxed text-slate-300">{{ element.description }}</p>
+
+          <!-- Bookmark -->
+          <div class="mt-4">
+            <button
+              v-if="isLoggedIn"
+              type="button"
+              class="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors disabled:opacity-50"
+              :class="
+                bookmarked
+                  ? 'border-amber-500/60 bg-amber-500/10 text-amber-300'
+                  : 'border-slate-600 text-slate-200 hover:border-amber-500/60 hover:text-amber-300'
+              "
+              :aria-pressed="bookmarked"
+              :disabled="bookmarkBusy"
+              @click="onToggleBookmark"
+            >
+              <span>{{ bookmarked ? '★' : '☆' }}</span>
+              {{ bookmarkBusy ? 'Menyimpan…' : bookmarked ? 'Tersimpan di bookmark' : 'Simpan ke bookmark' }}
+            </button>
+            <RouterLink
+              v-else
+              :to="`/login?next=/tabel-periodik/${element.symbol}`"
+              class="text-sm text-blue-400 hover:underline"
+            >
+              Masuk untuk menyimpan unsur ini ke bookmark
+            </RouterLink>
+            <p v-if="bookmarkError" class="mt-2 text-sm text-red-400">{{ bookmarkError }}</p>
+          </div>
         </div>
       </div>
 
