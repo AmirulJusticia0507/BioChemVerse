@@ -18,6 +18,8 @@ const { user, isLoggedIn, logout } = useAuth()
           <RouterLink to="/modules" class="nav-link">Modul</RouterLink>
           <RouterLink to="/operasi" class="nav-link">Operasi</RouterLink>
           <RouterLink to="/tabel-periodik" class="nav-link">Tabel Periodik</RouterLink>
+          <RouterLink to="/bandingkan" class="nav-link">Bandingkan</RouterLink>
+          <RouterLink to="/belajar" class="nav-link">Belajar</RouterLink>
 
           <template v-if="isLoggedIn">
             <span class="ml-2 hidden text-slate-400 sm:inline">

@@ -25,6 +25,16 @@ const router = createRouter({
       component: () => import('../views/ElementDetailView.vue'),
     },
     {
+      path: '/bandingkan',
+      name: 'compare',
+      component: () => import('../views/CompareView.vue'),
+    },
+    {
+      path: '/belajar',
+      name: 'study',
+      component: () => import('../views/StudyView.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
