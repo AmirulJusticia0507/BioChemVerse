@@ -4,13 +4,9 @@
  */
 import { computed, ref } from 'vue'
 
-// Nama event disimpan di konstanta: mencegah minifier menulis ulang literal
-// nama global `window` di dalam string.
+// Disimpan di konstanta: mencegah minifier menulis ulang literal nama global
+// `window` di dalam string (bisa mengubah nama event menjadi tidak valid).
 const INSTALL_EVENT = 'beforeinstallprompt'
-// Diagnostik: dipasang sebelum listener utama agar kelihatan listener mana yang jalan.
-window.addEventListener(INSTALL_EVENT, () => {
-  ;(window.__bcvDiag = window.__bcvDiag || []).push('listener1')
-})
 
 const deferredPrompt = ref(null)
 const installed = ref(false)
@@ -24,16 +20,9 @@ const isIos = () => /iphone|ipad|ipod/i.test(window.navigator.userAgent)
 window.addEventListener(INSTALL_EVENT, (event) => {
   // Cegah mini-infobar bawaan; tombol disediakan aplikasi.
   event.preventDefault()
-  const invoke = typeof event.prompt === 'function' ? event.prompt.bind(event) : null
-  if (!invoke) return
-  promptFn.value = invoke
+  if (typeof event.prompt !== 'function') return
+  promptFn.value = event.prompt.bind(event)
   deferredPrompt.value = { userChoice: event.userChoice }
-  // Diagnostik sementara
-  window.__bcvInstallSeen = {
-    eventName: event.type,
-    choice: typeof event.userChoice,
-    prompt: typeof event.prompt,
-  }
 })
 
 window.addEventListener('appinstalled', () => {

@@ -107,6 +107,16 @@ Sidebar adalah navigasi utama; header atas **bukan** tempat menu. Lihat `AppSide
 - Molekul: ikatan `stroke-slate-400`, atom mengikuti warna CPK (O = merah, N = biru, C = abu gelap).
 - Lab/forensik: gunakan `Accent` untuk area yang sedang aktif bereaksi.
 
+## 6a. PWA (Status Aplikasi)
+
+- Status PWA tampil di **kaki sidebar**, tepat di atas tombol akun (`PwaStatus.vue`), agar tidak bersaing dengan menu utama.
+- Tombol **Pasang aplikasi**: `border-blue-500/30`, latar `bg-blue-500/10`, teks `blue-200`, tinggi setara item navigasi (`px-3 py-2 text-sm`) — memakai aksen yang sama dengan CTA sekunder.
+- Kartu **Versi baru tersedia**: aksen biru, teks `text-[11px]`, tombol **Muat ulang** solid `bg-blue-500` (aksi utama bersifat eksplisit, bukan auto-reload).
+- Badge **Mode offline**: `amber-500/10` + teks `amber-200` + titik `amber-400`; status selalu disertai teks, bukan warna saja.
+- Petunjuk iOS memakai panel netral `slate-800/60` karena bersifat informatif, bukan aksi.
+- Saat sidebar ciut (desktop 72px) kartu/teks PWA disembunyikan (`lg:hidden`); ikon installer tetap tampil dengan `title`.
+- `theme-color` dan `background-color` manifest = `slate-950` (`#0f172a`) sesuai token latar aplikasi.
+
 ## 7. Aksesibilitas
 
 - Kontras teks minimum **4.5:1** (WCAG AA).
