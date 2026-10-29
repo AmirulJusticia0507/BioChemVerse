@@ -47,6 +47,10 @@ async function submit() {
         />
       </div>
 
+      <div class="text-right text-sm">
+        <RouterLink to="/forgot-password" class="text-blue-400 hover:underline">Lupa kata sandi?</RouterLink>
+      </div>
+
       <div>
         <label for="login-password" class="mb-1 block text-sm text-slate-300">Password</label>
         <input

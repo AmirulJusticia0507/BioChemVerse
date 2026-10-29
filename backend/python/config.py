@@ -32,6 +32,9 @@ class Settings:
             "JWT_SECRET",
             "dev-only-secret-ganti-dengan-string-acak-minimal-32-karakter",
         )
+        self.frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+        self.resend_api_key = os.getenv("RESEND_API_KEY", "")
+        self.email_from = os.getenv("EMAIL_FROM", "")
         if len(self.jwt_secret) < 32:
             raise ValueError("JWT_SECRET minimal 32 karakter (RFC 7518 untuk HS256)")
 

@@ -32,6 +32,8 @@ Konfigurasi dibaca dari environment / file `.env` (salin dari `.env.example` di 
 | GET | `/health/ready` | general | Readiness check — koneksi PostgreSQL & Redis | 200 | 503 |
 | GET | `/api/v1/modules` | modules | Daftar modul platform + fiturnya | 200 | — |
 | POST | `/api/v1/auth/register` | auth | Daftar akun baru (bcrypt) | 201 | 409 |
+| POST | `/api/v1/auth/forgot-password` | auth | Kirim tautan reset tanpa membocorkan status email | 202 | — |
+| POST | `/api/v1/auth/reset-password` | auth | Atur password baru dengan token sekali pakai (1 jam) | 200 | 400 |
 | POST | `/api/v1/auth/login` | auth | Login → JWT Bearer (12 jam) | 200 | 401 |
 | GET | `/api/v1/auth/me` | auth | Profil pengguna aktif (butuh token) | 200 | 401 |
 | GET | `/api/v1/progress` | progress | Semua progres modul pengguna aktif | 200 | 401 |

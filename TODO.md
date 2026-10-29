@@ -26,5 +26,6 @@
 - [x] completed | high | ChemSphere: halaman Bandingkan unsur + Belajar (flashcard, tren, kelarutan)
 - [x] completed | high | ChemSphere: kalkulator stoikiometri (massa molar, penyetaraan, mol, larutan)
 - [x] completed | high | ChemSphere: kuis unsur (backend soal + attempt, halaman kuis)
+- [x] completed | high | Auth: forgot password dan reset password via email
 - [x] completed | medium | Frontend: PWA + deployment produksi Vercel
 - [x] completed | medium | UI: halaman informasi — Tentang, Bantuan, Kebijakan Privasi, Kebijakan Cookies (+ link di sidebar & footer)

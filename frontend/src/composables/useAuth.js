@@ -43,6 +43,28 @@ export function useAuth() {
     return login({ username, password })
   }
 
+  async function requestPasswordReset(email) {
+    loading.value = true
+    try {
+      return await api('/api/v1/auth/forgot-password', {
+        method: 'POST', body: { email }, auth: false,
+      })
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function resetPassword({ token, password }) {
+    loading.value = true
+    try {
+      return await api('/api/v1/auth/reset-password', {
+        method: 'POST', body: { token, password }, auth: false,
+      })
+    } finally {
+      loading.value = false
+    }
+  }
+
   function logout() {
     setToken(null)
     setStoredUser(null)
@@ -58,5 +80,5 @@ export function useAuth() {
     return ''
   }
 
-  return { user, loading, isLoggedIn, login, register, logout, validate }
+  return { user, loading, isLoggedIn, login, register, requestPasswordReset, resetPassword, logout, validate }
 }

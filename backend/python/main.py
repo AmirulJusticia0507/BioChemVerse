@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import secrets
 from contextlib import asynccontextmanager
 
@@ -13,6 +14,7 @@ import db
 import quiz
 from auth import create_access_token, get_current_user, hash_password, verify_password
 from config import get_settings
+from email_service import send_password_reset_email
 from models import (
     BookmarkCreateRequest,
     BookmarkListResponse,
@@ -26,6 +28,8 @@ from models import (
     IonListResponse,
     IonOut,
     LoginRequest,
+    PasswordResetConfirmRequest,
+    PasswordResetRequest,
     ModuleListResponse,
     ModuleOut,
     ProgressListResponse,
@@ -262,6 +266,45 @@ async def login(payload: LoginRequest):
         raise HTTPException(status_code=401, detail="Username atau password salah")
     token = create_access_token(str(user["id"]), user["username"])
     return {"access_token": token, "token_type": "bearer", "user": _user_out(user)}
+
+
+def _reset_token_hash(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+@app.post(
+    "/api/v1/auth/forgot-password",
+    tags=["auth"],
+    status_code=202,
+    summary="Kirim tautan atur ulang kata sandi",
+)
+async def forgot_password(payload: PasswordResetRequest):
+    """Selalu berikan respons yang sama agar email terdaftar tidak dapat ditebak."""
+    user = await db.get_user_by_email(payload.email.strip().lower())
+    if user is not None:
+        token = secrets.token_urlsafe(32)
+        token_hash = _reset_token_hash(token)
+        await db.create_password_reset_token(str(user["id"]), token_hash)
+        reset_url = f"{settings.frontend_url}/reset-password?token={token}"
+        sent = await send_password_reset_email(user["email"], reset_url)
+        if not sent:
+            # Jangan sisakan token aktif yang tautannya tidak pernah sampai ke pengguna.
+            await db.delete_password_reset_token(token_hash)
+    return {"message": "Jika email terdaftar, tautan pengaturan ulang telah dikirim."}
+
+
+@app.post(
+    "/api/v1/auth/reset-password",
+    tags=["auth"],
+    summary="Atur ulang kata sandi dengan token sekali pakai",
+)
+async def reset_password(payload: PasswordResetConfirmRequest):
+    reset = await db.consume_password_reset_token(
+        _reset_token_hash(payload.token), hash_password(payload.password)
+    )
+    if not reset:
+        raise HTTPException(status_code=400, detail="Tautan reset tidak valid atau sudah kedaluwarsa")
+    return {"message": "Kata sandi berhasil diperbarui. Silakan masuk kembali."}
 
 
 @app.get(

@@ -77,6 +77,15 @@ class TokenResponse(BaseModel):
     user: UserOut = Field(..., description="Profil pengguna yang berhasil login")
 
 
+class PasswordResetRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=255, examples=["siswa@contoh.com"])
+
+
+class PasswordResetConfirmRequest(BaseModel):
+    token: str = Field(..., min_length=32, max_length=512)
+    password: str = Field(..., min_length=8, max_length=128)
+
+
 # --- Progres modul ----------------------------------------------------------
 
 

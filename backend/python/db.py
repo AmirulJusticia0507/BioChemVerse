@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from datetime import timedelta
 from typing import Any
 
 import asyncpg
@@ -110,6 +111,55 @@ async def create_user(username: str, email: str, password_hash: str, role: str =
         role,
     )
     return dict(record)
+
+
+async def create_password_reset_token(user_id: str, token_hash: str) -> None:
+    """Simpan satu token reset aktif per akun; token polos tidak pernah disimpan."""
+    if _pool is None:
+        return
+    async with _pool.acquire() as conn:
+        async with conn.transaction():
+            await conn.execute("DELETE FROM password_reset_tokens WHERE user_id = $1", user_id)
+            await conn.execute(
+                """
+                INSERT INTO password_reset_tokens (token_hash, user_id, expires_at)
+                VALUES ($1, $2, now() + $3::interval)
+                """,
+                token_hash,
+                user_id,
+                timedelta(hours=1),
+            )
+
+
+async def delete_password_reset_token(token_hash: str) -> None:
+    if _pool is not None:
+        await _pool.execute("DELETE FROM password_reset_tokens WHERE token_hash = $1", token_hash)
+
+
+async def consume_password_reset_token(token_hash: str, password_hash: str) -> bool:
+    """Tukar token yang valid menjadi password baru sekali saja, secara atomik."""
+    if _pool is None:
+        return False
+    async with _pool.acquire() as conn:
+        async with conn.transaction():
+            row = await conn.fetchrow(
+                """
+                DELETE FROM password_reset_tokens
+                WHERE token_hash = $1 AND expires_at > now()
+                RETURNING user_id
+                """,
+                token_hash,
+            )
+            if row is None:
+                return False
+            user_id = row["user_id"]
+            await conn.execute(
+                "UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2",
+                password_hash,
+                user_id,
+            )
+            await conn.execute("DELETE FROM password_reset_tokens WHERE user_id = $1", user_id)
+            return True
 
 
 # --- Helper tabel user_progress --------------------------------------------

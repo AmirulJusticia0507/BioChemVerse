@@ -43,6 +43,8 @@ const titles = {
   'element-detail': 'Detail Unsur',
   login: 'Masuk',
   register: 'Daftar',
+  'forgot-password': 'Lupa Kata Sandi',
+  'reset-password': 'Atur Ulang Kata Sandi',
   about: 'Tentang',
   help: 'Bantuan',
   privacy: 'Kebijakan Privasi',

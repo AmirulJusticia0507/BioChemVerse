@@ -103,7 +103,7 @@ const toggle = (index) => (openIndex.value = openIndex.value === index ? -1 : in
 
     <h2 id="akun">Mengelola akun</h2>
     <ul>
-      <li><strong>Lupa kata sandi:</strong> pemulihan mandiri belum tersedia; ajukan reset lewat kanal pelaporan dengan menyebut username kamu.</li>
+      <li><strong>Lupa kata sandi:</strong> buka halaman Masuk, lalu pilih “Lupa kata sandi?” untuk menerima tautan reset melalui email.</li>
       <li><strong>Ganti username atau email:</strong> ajukan lewat kanal pelaporan.</li>
       <li><strong>Hapus akun:</strong> minta penghapusan beserta data progres dan bookmark. Penghapusan bersifat permanen.</li>
     </ul>
