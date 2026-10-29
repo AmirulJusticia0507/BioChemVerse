@@ -6,3 +6,8 @@
 - [x] completed | medium | Setup PostgreSQL + Redis
 - [x] completed | medium | Dokumentasi API (OpenAPI/Swagger)
 - [x] completed | low | Setup CI/CD pipeline
+- [ ] pending | high | Backend: autentikasi JWT (register, login, me)
+- [ ] pending | high | Backend: endpoint CRUD progres modul (user_progress)
+- [ ] pending | high | Frontend: Vue Router + halaman dasar (Beranda, Modul, 404)
+- [ ] pending | medium | Frontend: halaman Login/Register terhubung API
+- [ ] pending | medium | Frontend: tampil progres modul saat login

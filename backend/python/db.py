@@ -49,3 +49,49 @@ async def ping() -> bool:
         return await _pool.fetchval("SELECT 1") == 1
     except asyncpg.PostgresError:
         return False
+
+
+# --- Helper tabel users -----------------------------------------------------
+
+_USER_COLS = "id, username, email, role, created_at"
+
+
+async def get_user_by_username(username: str) -> dict | None:
+    if _pool is None:
+        return None
+    record = await _pool.fetchrow(
+        f"SELECT {_USER_COLS}, password_hash FROM users WHERE username = $1", username
+    )
+    return dict(record) if record else None
+
+
+async def get_user_by_email(email: str) -> dict | None:
+    if _pool is None:
+        return None
+    record = await _pool.fetchrow(f"SELECT {_USER_COLS} FROM users WHERE email = $1", email)
+    return dict(record) if record else None
+
+
+async def get_user_by_id(user_id: str) -> dict | None:
+    if _pool is None:
+        return None
+    try:
+        record = await _pool.fetchrow(f"SELECT {_USER_COLS} FROM users WHERE id = $1", user_id)
+    except (asyncpg.PostgresError, ValueError):
+        return None
+    return dict(record) if record else None
+
+
+async def create_user(username: str, email: str, password_hash: str, role: str = "student") -> dict:
+    record = await _pool.fetchrow(
+        f"""
+        INSERT INTO users (username, email, password_hash, role)
+        VALUES ($1, $2, $3, $4)
+        RETURNING {_USER_COLS}
+        """,
+        username,
+        email,
+        password_hash,
+        role,
+    )
+    return dict(record)

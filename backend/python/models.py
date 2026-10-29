@@ -45,3 +45,31 @@ class ModuleOut(BaseModel):
 class ModuleListResponse(BaseModel):
     total: int = Field(..., examples=[3], description="Jumlah modul")
     data: list[ModuleOut]
+
+
+# --- Autentikasi ------------------------------------------------------------
+
+
+class RegisterRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=64, examples=["student1"], description="Username unik")
+    email: str = Field(..., min_length=5, max_length=255, examples=["siswa@contoh.com"], description="Email unik")
+    password: str = Field(..., min_length=8, max_length=128, description="Password, minimal 8 karakter")
+
+
+class LoginRequest(BaseModel):
+    username: str = Field(..., examples=["student1"], description="Username")
+    password: str = Field(..., description="Password")
+
+
+class UserOut(BaseModel):
+    id: str = Field(..., description="UUID pengguna")
+    username: str
+    email: str
+    role: str = Field(..., examples=["student"], description="Peran pengguna")
+    created_at: str = Field(..., description="Waktu pembuatan akun (ISO-8601)")
+
+
+class TokenResponse(BaseModel):
+    access_token: str = Field(..., description="JWT Bearer token")
+    token_type: str = Field("bearer", examples=["bearer"])
+    user: UserOut = Field(..., description="Profil pengguna yang berhasil login")

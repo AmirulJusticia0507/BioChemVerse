@@ -4,19 +4,24 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 import cache
 import db
+from auth import create_access_token, get_current_user, hash_password, verify_password
 from config import get_settings
 from models import (
     ErrorResponse,
     HealthResponse,
+    LoginRequest,
     ModuleListResponse,
     ModuleOut,
     ReadinessResponse,
+    RegisterRequest,
     RootResponse,
+    TokenResponse,
+    UserOut,
 )
 
 settings = get_settings()
@@ -26,6 +31,10 @@ TAGS_METADATA = [
     {
         "name": "modules",
         "description": "Daftar modul platform BioChemVerse: ChemSphere, ForensiLab, AnatomiMed.",
+    },
+    {
+        "name": "auth",
+        "description": "Autentikasi JWT — register, login, dan profil pengguna. Sertakan `Authorization: Bearer <token>`.",
     },
 ]
 
@@ -155,3 +164,68 @@ async def readiness():
 async def list_modules():
     """Semua modul utama BioChemVerse beserta fiturnya."""
     return {"total": len(MODULES), "data": MODULES}
+
+
+# --- Autentikasi ------------------------------------------------------------
+
+
+def _user_out(user: dict) -> dict:
+    """Sesuaikan baris database dengan skema UserOut (waktu → ISO string)."""
+    created = user.get("created_at")
+    return {
+        "id": str(user["id"]),
+        "username": user["username"],
+        "email": user.get("email", ""),
+        "role": user.get("role", "student"),
+        "created_at": created.isoformat() if hasattr(created, "isoformat") else str(created),
+    }
+
+
+@app.post(
+    "/api/v1/auth/register",
+    tags=["auth"],
+    response_model=UserOut,
+    status_code=201,
+    responses={409: {"model": ErrorResponse, "description": "Username atau email sudah terdaftar"}},
+    summary="Daftar akun baru",
+)
+async def register(payload: RegisterRequest):
+    """Buat akun baru; password di-hash dengan bcrypt, tidak pernah disimpan polos."""
+    if await db.get_user_by_username(payload.username):
+        raise HTTPException(status_code=409, detail="Username sudah terdaftar")
+    if await db.get_user_by_email(payload.email):
+        raise HTTPException(status_code=409, detail="Email sudah terdaftar")
+    user = await db.create_user(
+        username=payload.username,
+        email=payload.email,
+        password_hash=hash_password(payload.password),
+    )
+    return _user_out(user)
+
+
+@app.post(
+    "/api/v1/auth/login",
+    tags=["auth"],
+    response_model=TokenResponse,
+    responses={401: {"model": ErrorResponse, "description": "Username atau password salah"}},
+    summary="Login dan dapatkan JWT",
+)
+async def login(payload: LoginRequest):
+    """Verifikasi kredensial; kembalikan Bearer token berlaku 12 jam."""
+    user = await db.get_user_by_username(payload.username)
+    if user is None or not verify_password(payload.password, user.get("password_hash", "")):
+        raise HTTPException(status_code=401, detail="Username atau password salah")
+    token = create_access_token(str(user["id"]), user["username"])
+    return {"access_token": token, "token_type": "bearer", "user": _user_out(user)}
+
+
+@app.get(
+    "/api/v1/auth/me",
+    tags=["auth"],
+    response_model=UserOut,
+    responses={401: {"model": ErrorResponse, "description": "Token tidak ada, tidak valid, atau kedaluwarsa"}},
+    summary="Profil pengguna aktif",
+)
+async def me(current_user: dict = Depends(get_current_user)):
+    """Butuh header `Authorization: Bearer <token>`."""
+    return _user_out(current_user)

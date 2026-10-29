@@ -28,7 +28,12 @@ class Settings:
             ).split(",")
             if origin.strip()
         ]
-        self.jwt_secret = os.getenv("JWT_SECRET", "change-me-in-production")
+        self.jwt_secret = os.getenv(
+            "JWT_SECRET",
+            "dev-only-secret-ganti-dengan-string-acak-minimal-32-karakter",
+        )
+        if len(self.jwt_secret) < 32:
+            raise ValueError("JWT_SECRET minimal 32 karakter (RFC 7518 untuk HS256)")
 
 
 @lru_cache

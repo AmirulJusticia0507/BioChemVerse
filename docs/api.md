@@ -31,6 +31,9 @@ Konfigurasi dibaca dari environment / file `.env` (salin dari `.env.example` di 
 | GET | `/health` | general | Liveness check — status proses | 200 | — |
 | GET | `/health/ready` | general | Readiness check — koneksi PostgreSQL & Redis | 200 | 503 |
 | GET | `/api/v1/modules` | modules | Daftar modul platform + fiturnya | 200 | — |
+| POST | `/api/v1/auth/register` | auth | Daftar akun baru (bcrypt) | 201 | 409 |
+| POST | `/api/v1/auth/login` | auth | Login → JWT Bearer (12 jam) | 200 | 401 |
+| GET | `/api/v1/auth/me` | auth | Profil pengguna aktif (butuh token) | 200 | 401 |
 
 ### 1. `GET /` — Info API
 
@@ -129,6 +132,60 @@ curl http://localhost:8000/api/v1/modules
   ]
 }
 ```
+
+---
+
+## Autentikasi (JWT)
+
+Semua endpoint tag `auth` memakai body JSON (bukan form).
+
+### `POST /api/v1/auth/register` → 201
+
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"student1","email":"siswa@contoh.com","password":"rahasia123"}'
+```
+
+```json
+{
+  "id": "…uuid…",
+  "username": "student1",
+  "email": "siswa@contoh.com",
+  "role": "student",
+  "created_at": "2026-10-29T10:00:00+00:00"
+}
+```
+
+`409 Conflict` bila username/email sudah terdaftar · `422` bila password < 8 karakter.
+
+### `POST /api/v1/auth/login` → 200
+
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"student1","password":"rahasia123"}'
+```
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…",
+  "token_type": "bearer",
+  "user": { "id": "…uuid…", "username": "student1", "email": "…", "role": "student", "created_at": "…" }
+}
+```
+
+`401 Unauthorized` bila kredensial salah.
+
+### `GET /api/v1/auth/me` → 200
+
+```bash
+curl http://localhost:8000/api/v1/auth/me -H "Authorization: Bearer <access_token>"
+```
+
+`401` bila token tidak ada, tidak valid, palsu, atau kedaluwarsa.
+
+> **Token:** HS256, berlaku **12 jam**, `sub` = UUID pengguna. `JWT_SECRET` wajib ≥ 32 karakter.
 
 ---
 
