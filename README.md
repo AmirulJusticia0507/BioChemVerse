@@ -6,7 +6,7 @@
 
 ---
 
-## 🌟 Fitur Utama & Modul System
+## 🌟 Fitur Utama & Modul Sistem
 
 Platform ini terdiri dari 3 modul utama yang saling terhubung:
 
@@ -19,31 +19,33 @@ Platform ini terdiri dari 3 modul utama yang saling terhubung:
 ### 2. 🔍 ForensiLab (Gamifikasi Forensik & Bio-Kimia)
 
 - **Interactive Crime Scene & Evidence Board:** Papan bukti berbasis *graph node* untuk menghubungkan bukti sains, alibi, dan fakta kasus.
-- **Virtual Lab Mini-Games:**
-  - Toksikologi & Uji Reagen Kimia (Uji Racun/Senyawa)
-  - Kromatografi Lapis Tipis (TLC) & Spektroskopi
-  - Serologi Darah & *DNA Fingerprinting*
+- **Virtual Lab Mini-Games:** Toksikologi & uji reagen, Kromatografi Lapis Tipis (TLC) & spektroskopi, serologi darah & *DNA fingerprinting*.
 - **Dynamic Feedback System:** Penjelasan mekanisme biokimia saat eksperimen gagal/berhasil.
 
 ### 3. 🩺 AnatomiMed & Virtual Patient Simulator
 
-- **3D Body Dissection Viewer:** Eksplorasi anatomi manusia multi-layer (Kulit, Otot, Tulang, Sistem Saraf, Kardiovaskular, Organ).
-- **Virtual Patient Simulator:**
-  - Anamnesis (pemeriksaan keluhan pasien)
-  - Pemeriksaan fisik & tanda vital (Tekanan Darah, Nadi, SpO₂, Suhu)
-  - Stetoskop virtual & uji lab biokimia darah
+- **3D Body Dissection Viewer:** Eksplorasi anatomi manusia multi-layer (kulit, otot, tulang, sistem saraf, kardiovaskular, organ).
+- **Virtual Patient Simulator:** Anamnesis, pemeriksaan fisik & tanda vital, stetoskop virtual & uji lab biokimia darah.
 - **Pathophysiology & Drug Simulator:** Visualisasi reaksi obat dan mekanisme penyakit pada skala organ/seluler.
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## 🛠️ Tech Stack
 
-- **Frontend:** Vue 3 / React.js (Vite), Tailwind CSS
-- **3D Engine:** Three.js / React Three Fiber (`.glb` / `.gltf` model)
-- **Interactive Canvas:** HTML5 Canvas / Pixi.js
-- **Backend Engine:** Node.js (Express / NestJS) / Python (FastAPI)
-- **Database & Cache:** PostgreSQL (Case Data & Medical Rules), Redis (Session State)
-- **Data Standards:** ICD-10 (Disease Codes), FMA (Foundational Model of Anatomy)
+| Lapisan | Teknologi |
+| --- | --- |
+| Frontend | Vue 3 + Vite + Tailwind CSS 4 (`frontend/`) |
+| Backend utama | Python FastAPI + Uvicorn, asyncpg (PostgreSQL), redis-py (`backend/python/`) |
+| Backend sekunder | Go stdlib `net/http` — health/readiness (`backend/go/`) |
+| Database & Cache | PostgreSQL 16, Redis 7 |
+| Infrastruktur lokal | Service lokal (mis. Laragon) **atau** `docker-compose.yml` |
+| CI/CD | GitHub Actions (`.github/workflows/`) |
+| Data standards | ICD-10 (kode penyakit), FMA (anatomi) |
+
+> Detail arsitektur: [`architecture/overview.md`](architecture/overview.md) ·
+> Design system: [`design/design-system.md`](design/design-system.md) ·
+> Dokumentasi API: [`docs/api.md`](docs/api.md) ·
+> Materi anatomi: [`docs/anatomy.md`](docs/anatomy.md)
 
 ---
 
@@ -51,41 +53,65 @@ Platform ini terdiri dari 3 modul utama yang saling terhubung:
 
 ### Prasyarat
 
-- Node.js versi >= 18.x
-- PostgreSQL versi >= 14
+- Node.js ≥ 18
+- Python ≥ 3.11
+- PostgreSQL ≥ 14 **dan** Redis (service lokal) — atau Docker untuk `docker-compose.yml`
+- (Opsional) Go ≥ 1.22 untuk server health-check Go
 
-### Instalasi & Setup
+### 1. Clone Repositori
 
-1. **Clone Repositori:**
+```bash
+git clone https://github.com/AmirulJusticia0507/biochemverse.git
+cd biochemverse
+```
 
-   ```bash
-   git clone https://github.com/AmirulJusticia0507/biochemverse.git
-   cd biochemverse
-   ```
+### 2. Konfigurasi Environment
 
-2. **Instalasi Dependency:**
+```bash
+cp .env.example .env      # Windows: copy .env.example .env
+```
 
-   ```bash
-   npm install
-   ```
+Sesuaikan `DATABASE_URL`, `REDIS_URL`, `CORS_ORIGINS`, dan `JWT_SECRET`.
 
-3. **Konfigurasi Environment (`.env`):**
+### 3. Jalankan Infrastruktur
 
-   Salin `.env.example` menjadi `.env` dan sesuaikan nilainya:
+Pakai **salah satu**:
 
-   ```env
-   PORT=5000
-   DATABASE_URL=postgresql://user:password@localhost:5432/biochemverse
-   JWT_SECRET=your_secret_key
-   ```
+```bash
+# Opsi A — service lokal sudah berjalan (mis. Laragon): biarkan saja
+# Opsi B — Docker
+docker compose up -d
+```
 
-4. **Jalankan Mode Development:**
+Database `biochemverse` dibuat otomatis saat API pertama kali start.
 
-   ```bash
-   npm run dev
-   ```
+### 4. Jalankan Backend (port 8000)
 
-   Aplikasi dapat diakses di `http://localhost:3000`.
+```bash
+cd backend/python
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+- Swagger UI: <http://localhost:8000/docs>
+- Readiness: <http://localhost:8000/health/ready>
+
+### 5. Jalankan Frontend (port 5173)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Aplikasi terbuka di `http://localhost:5173`.
+
+### 6. (Opsional) Server Go — health check (port 8001)
+
+```bash
+cd backend/go
+go run .
+```
 
 ---
 
@@ -93,20 +119,38 @@ Platform ini terdiri dari 3 modul utama yang saling terhubung:
 
 ```
 biochemverse/
-├── apps/
-│   ├── web/                     # Frontend Vue/React Application
-│   └── api/                     # Backend API & Logic Engine
-├── packages/
-│   ├── chemsphere-core/         # Module 1: Chemistry & Molecular Engine
-│   ├── forensilab-engine/       # Module 2: Case Narrative & Evidence Graph
-│   └── anatomimed-3d/           # Module 3: 3D Anatomy & Patient Simulator
-└── docs/                        # Dokumentasi Sistem & API Specs
+├── frontend/                 # Vue 3 + Vite + Tailwind (SPA)
+│   └── src/                  # App.vue, components/, assets/
+├── backend/
+│   ├── python/               # FastAPI — API utama + schema.sql
+│   └── go/                   # Server health/readiness Go
+├── architecture/             # Dokumentasi arsitektur
+├── design/                   # Design system
+├── docs/                     # API docs, OpenAPI snapshot, materi anatomi
+├── skills/                   # Skills untuk agent
+├── .github/workflows/        # CI (build + smoke test) & CD (packaging)
+├── docker-compose.yml        # PostgreSQL + Redis
+├── AGENTS.md                 # Aturan kerja agent
+└── TODO.md                   # Status task
 ```
+
+---
+
+## ✅ Status
+
+| Area | Status |
+| --- | --- |
+| Scaffolding frontend & backend | ✅ |
+| PostgreSQL + Redis (koneksi, skema, readiness) | ✅ |
+| Dokumentasi API (OpenAPI/Swagger) | ✅ |
+| CI/CD (GitHub Actions) | ✅ |
+| Auth JWT, router Vue, endpoint modul | ⏳ |
+| ChemSphere / ForensiLab / AnatomiMed (fitur inti) | ⏳ |
+
+Lihat [`TODO.md`](TODO.md) untuk daftar task terkini.
 
 ---
 
 ## 📄 Lisensi
 
 Proyek ini dilisensikan di bawah MIT License.
-filePath">
-C:\laragon\www\BioChemVerse\README.md
