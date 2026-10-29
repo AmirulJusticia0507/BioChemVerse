@@ -95,3 +95,54 @@ async def create_user(username: str, email: str, password_hash: str, role: str =
         role,
     )
     return dict(record)
+
+
+# --- Helper tabel user_progress --------------------------------------------
+
+_PROGRESS_COLS = "module, score, completed, updated_at"
+
+
+async def list_progress(user_id: str) -> list[dict]:
+    if _pool is None:
+        return []
+    records = await _pool.fetch(
+        f"SELECT {_PROGRESS_COLS} FROM user_progress WHERE user_id = $1 ORDER BY module",
+        user_id,
+    )
+    return [dict(record) for record in records]
+
+
+async def get_progress(user_id: str, module: str) -> dict | None:
+    if _pool is None:
+        return None
+    record = await _pool.fetchrow(
+        f"SELECT {_PROGRESS_COLS} FROM user_progress WHERE user_id = $1 AND module = $2",
+        user_id,
+        module,
+    )
+    return dict(record) if record else None
+
+
+async def upsert_progress(
+    user_id: str,
+    module: str,
+    score: int | None = None,
+    completed: bool | None = None,
+) -> dict:
+    """Insert atau update progres; field yang tidak dikirim tetap dipertahankan."""
+    record = await _pool.fetchrow(
+        f"""
+        INSERT INTO user_progress (user_id, module, score, completed)
+        VALUES ($1, $2, COALESCE($3, 0), COALESCE($4, false))
+        ON CONFLICT (user_id, module) DO UPDATE
+            SET score = COALESCE($3, user_progress.score),
+                completed = COALESCE($4, user_progress.completed),
+                updated_at = now()
+        RETURNING {_PROGRESS_COLS}
+        """,
+        user_id,
+        module,
+        score,
+        completed,
+    )
+    return dict(record)

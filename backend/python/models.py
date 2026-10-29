@@ -73,3 +73,23 @@ class TokenResponse(BaseModel):
     access_token: str = Field(..., description="JWT Bearer token")
     token_type: str = Field("bearer", examples=["bearer"])
     user: UserOut = Field(..., description="Profil pengguna yang berhasil login")
+
+
+# --- Progres modul ----------------------------------------------------------
+
+
+class ProgressOut(BaseModel):
+    module: str = Field(..., examples=["chemsphere"], description="Kode modul (chemsphere|forensilab|anatomimed)")
+    score: int = Field(..., ge=0, examples=[80], description="Skor kumulatif modul")
+    completed: bool = Field(..., examples=[False], description="Modul sudah diselesaikan")
+    updated_at: str = Field(..., description="Terakhir diperbarui (ISO-8601)")
+
+
+class ProgressListResponse(BaseModel):
+    total: int = Field(..., examples=[2], description="Jumlah modul yang punya progres")
+    data: list[ProgressOut]
+
+
+class ProgressUpdateRequest(BaseModel):
+    score: int | None = Field(None, ge=0, le=1_000_000, description="Skor baru; kosongkan agar tetap")
+    completed: bool | None = Field(None, description="Status selesai; kosongkan agar tetap")

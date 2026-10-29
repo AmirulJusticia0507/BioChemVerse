@@ -251,6 +251,196 @@
           }
         ]
       }
+    },
+    "/api/v1/progress": {
+      "get": {
+        "tags": [
+          "progress"
+        ],
+        "summary": "Semua progres pengguna aktif",
+        "description": "Daftar progres seluruh modul milik pengguna yang sedang login.",
+        "operationId": "list_progress_api_v1_progress_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/progress/{module_id}": {
+      "get": {
+        "tags": [
+          "progress"
+        ],
+        "summary": "Progres satu modul",
+        "operationId": "get_progress_api_v1_progress__module_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Kode modul tidak dikenal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Belum ada progres untuk modul ini",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "progress"
+        ],
+        "summary": "Buat atau perbarui progres (upsert)",
+        "description": "Upsert per modul. Field yang tidak dikirim dipertahankan nilainya.",
+        "operationId": "upsert_progress_api_v1_progress__module_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "module_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Module Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgressUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Kode modul tidak dikenal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Skor di luar rentang 0–1000000",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -442,6 +632,105 @@
           "features"
         ],
         "title": "ModuleOut"
+      },
+      "ProgressListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Jumlah modul yang punya progres",
+            "examples": [
+              2
+            ]
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ProgressOut"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "data"
+        ],
+        "title": "ProgressListResponse"
+      },
+      "ProgressOut": {
+        "properties": {
+          "module": {
+            "type": "string",
+            "title": "Module",
+            "description": "Kode modul (chemsphere|forensilab|anatomimed)",
+            "examples": [
+              "chemsphere"
+            ]
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Score",
+            "description": "Skor kumulatif modul",
+            "examples": [
+              80
+            ]
+          },
+          "completed": {
+            "type": "boolean",
+            "title": "Completed",
+            "description": "Modul sudah diselesaikan",
+            "examples": [
+              false
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At",
+            "description": "Terakhir diperbarui (ISO-8601)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "module",
+          "score",
+          "completed",
+          "updated_at"
+        ],
+        "title": "ProgressOut"
+      },
+      "ProgressUpdateRequest": {
+        "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score",
+            "description": "Skor baru; kosongkan agar tetap"
+          },
+          "completed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed",
+            "description": "Status selesai; kosongkan agar tetap"
+          }
+        },
+        "type": "object",
+        "title": "ProgressUpdateRequest"
       },
       "ReadinessResponse": {
         "properties": {
@@ -695,6 +984,10 @@
     {
       "name": "auth",
       "description": "Autentikasi JWT — register, login, dan profil pengguna. Sertakan `Authorization: Bearer <token>`."
+    },
+    {
+      "name": "progress",
+      "description": "Progres belajar per modul (butuh token). Skor & status selesai per pengguna."
     }
   ]
 }

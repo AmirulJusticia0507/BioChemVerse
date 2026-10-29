@@ -34,6 +34,9 @@ Konfigurasi dibaca dari environment / file `.env` (salin dari `.env.example` di 
 | POST | `/api/v1/auth/register` | auth | Daftar akun baru (bcrypt) | 201 | 409 |
 | POST | `/api/v1/auth/login` | auth | Login → JWT Bearer (12 jam) | 200 | 401 |
 | GET | `/api/v1/auth/me` | auth | Profil pengguna aktif (butuh token) | 200 | 401 |
+| GET | `/api/v1/progress` | progress | Semua progres modul pengguna aktif | 200 | 401 |
+| GET | `/api/v1/progress/{module}` | progress | Progres satu modul | 200 | 400/401/404 |
+| PUT | `/api/v1/progress/{module}` | progress | Upsert progres (score/completed) | 200 | 400/401/422 |
 
 ### 1. `GET /` — Info API
 
@@ -186,6 +189,47 @@ curl http://localhost:8000/api/v1/auth/me -H "Authorization: Bearer <access_toke
 `401` bila token tidak ada, tidak valid, palsu, atau kedaluwarsa.
 
 > **Token:** HS256, berlaku **12 jam**, `sub` = UUID pengguna. `JWT_SECRET` wajib ≥ 32 karakter.
+
+---
+
+## Progres Modul (JWT)
+
+Modul yang valid: `chemsphere`, `forensilab`, `anatomimed`.
+
+### `GET /api/v1/progress` → 200
+
+```bash
+curl http://localhost:8000/api/v1/progress -H "Authorization: Bearer <token>"
+```
+
+```json
+{
+  "total": 2,
+  "data": [
+    { "module": "chemsphere", "score": 50, "completed": true, "updated_at": "2026-10-29T03:01:11+00:00" },
+    { "module": "forensilab", "score": 90, "completed": true, "updated_at": "2026-10-29T03:01:11+00:00" }
+  ]
+}
+```
+
+### `PUT /api/v1/progress/{module}` → 200 (upsert)
+
+```bash
+curl -X PUT http://localhost:8000/api/v1/progress/chemsphere \
+  -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+  -d '{"score": 50}'
+```
+
+```json
+{ "module": "chemsphere", "score": 50, "completed": false, "updated_at": "2026-10-29T03:01:11+00:00" }
+```
+
+Field yang **tidak dikirim dipertahankan** (mis. kirim `{"completed": true}` saja → `score` tetap).
+
+### `GET /api/v1/progress/{module}` → 200 / 404
+
+`404` bila pengguna belum pernah menyimpan progres modul tersebut.
+`400` bila kode modul tidak dikenal · `422` bila `score` di luar `0–1000000`.
 
 ---
 

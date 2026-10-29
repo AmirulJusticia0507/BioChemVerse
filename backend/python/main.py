@@ -17,6 +17,9 @@ from models import (
     LoginRequest,
     ModuleListResponse,
     ModuleOut,
+    ProgressListResponse,
+    ProgressOut,
+    ProgressUpdateRequest,
     ReadinessResponse,
     RegisterRequest,
     RootResponse,
@@ -36,7 +39,13 @@ TAGS_METADATA = [
         "name": "auth",
         "description": "Autentikasi JWT — register, login, dan profil pengguna. Sertakan `Authorization: Bearer <token>`.",
     },
+    {
+        "name": "progress",
+        "description": "Progres belajar per modul (butuh token). Skor & status selesai per pengguna.",
+    },
 ]
+
+MODULE_IDS = ("chemsphere", "forensilab", "anatomimed")
 
 MODULES = [
     ModuleOut(
@@ -229,3 +238,84 @@ async def login(payload: LoginRequest):
 async def me(current_user: dict = Depends(get_current_user)):
     """Butuh header `Authorization: Bearer <token>`."""
     return _user_out(current_user)
+
+
+# --- Progres modul ----------------------------------------------------------
+
+
+def _progress_out(row: dict) -> dict:
+    updated = row.get("updated_at")
+    return {
+        "module": row["module"],
+        "score": row["score"],
+        "completed": row["completed"],
+        "updated_at": updated.isoformat() if hasattr(updated, "isoformat") else str(updated),
+    }
+
+
+def _validate_module(module_id: str) -> str:
+    if module_id not in MODULE_IDS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Modul tidak dikenal: '{module_id}'. Pilihan: {', '.join(MODULE_IDS)}",
+        )
+    return module_id
+
+
+@app.get(
+    "/api/v1/progress",
+    tags=["progress"],
+    response_model=ProgressListResponse,
+    responses={401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"}},
+    summary="Semua progres pengguna aktif",
+)
+async def list_progress(current_user: dict = Depends(get_current_user)):
+    """Daftar progres seluruh modul milik pengguna yang sedang login."""
+    rows = await db.list_progress(str(current_user["id"]))
+    return {"total": len(rows), "data": [_progress_out(row) for row in rows]}
+
+
+@app.get(
+    "/api/v1/progress/{module_id}",
+    tags=["progress"],
+    response_model=ProgressOut,
+    responses={
+        400: {"model": ErrorResponse, "description": "Kode modul tidak dikenal"},
+        401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"},
+        404: {"model": ErrorResponse, "description": "Belum ada progres untuk modul ini"},
+    },
+    summary="Progres satu modul",
+)
+async def get_progress(module_id: str, current_user: dict = Depends(get_current_user)):
+    _validate_module(module_id)
+    row = await db.get_progress(str(current_user["id"]), module_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"Belum ada progres untuk modul '{module_id}'")
+    return _progress_out(row)
+
+
+@app.put(
+    "/api/v1/progress/{module_id}",
+    tags=["progress"],
+    response_model=ProgressOut,
+    responses={
+        400: {"model": ErrorResponse, "description": "Kode modul tidak dikenal"},
+        401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"},
+        422: {"model": ErrorResponse, "description": "Skor di luar rentang 0–1000000"},
+    },
+    summary="Buat atau perbarui progres (upsert)",
+)
+async def upsert_progress(
+    module_id: str,
+    payload: ProgressUpdateRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Upsert per modul. Field yang tidak dikirim dipertahankan nilainya."""
+    _validate_module(module_id)
+    row = await db.upsert_progress(
+        user_id=str(current_user["id"]),
+        module=module_id,
+        score=payload.score,
+        completed=payload.completed,
+    )
+    return _progress_out(row)
