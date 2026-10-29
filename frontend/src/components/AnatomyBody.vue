@@ -225,6 +225,12 @@ let animationFrame
 let resizeObserver
 let sketchfabApi
 
+const focusY = {
+  kepala: 3.2, leher: 2.55, dada: 1.65, jantung: 1.6, hati: 0.85, lambung: 0.78,
+  usus: 0.2, ginjal: 0.55, 'serat-otot': 1.3, payudara: 1.65, panggul: -0.55,
+  'reproduksi-wanita': -0.7, tulang: 0.8, lengan: 1.0, kaki: -2.1,
+}
+
 const loadSketchfabScript = () => new Promise((resolve, reject) => {
   if (window.Sketchfab) return resolve()
   const script = document.createElement('script')
@@ -408,7 +414,9 @@ const orderedRegions = computed(() => [
 
 const select = (id) => {
   selected.value = selected.value === id ? null : id
-  if (selected.value) sketchfabApi?.recenterCamera()
+  const y = focusY[selected.value]
+  if (y !== undefined) sketchfabApi?.setCameraLookAt([0, y, 6], [0, y, 0], 0.8)
+  else if (!selected.value) sketchfabApi?.recenterCamera()
 }
 
 const regionClass = (region) =>

@@ -18,6 +18,6 @@
 - [x] completed | medium | Anatomi: gaya atlas organ untuk model 3D pria dan wanita
 - [x] completed | medium | Anatomi: integrasi model Sketchfab gratis berlisensi CC BY
 - [x] completed | low | Anatomi: materi struktur serat otot interaktif
-- [x] completed | medium | Anatomi: tombol bagian tubuh menyorot area pada tubuh utuh
+- [x] completed | medium | Anatomi: tombol bagian tubuh menyorot area dan memfokuskan kamera model 3D
 - [x] completed | low | Anatomi: ilustrasi struktur otak pada panel kepala
 - [x] completed | medium | Anatomi: diagram fokus untuk seluruh bagian tubuh
