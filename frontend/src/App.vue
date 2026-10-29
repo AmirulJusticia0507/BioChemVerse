@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from './composables/useAuth.js'
-import { sidebarWidth } from './composables/useSidebar.js'
+import { sidebarDesktopHidden, sidebarWidth, toggleDesktopSidebar } from './composables/useSidebar.js'
 import { applyUpdate, bindOnlineStatus, updateReady } from './composables/usePwaState.js'
 import AppSidebar from './components/AppSidebar.vue'
 
@@ -72,6 +72,19 @@ const footerLinks = [
     <div class="flex min-h-screen flex-col lg:pl-[var(--sidebar-w)] transition-[padding] duration-200 ease-out" :style="contentStyle">
       <header class="sticky top-0 z-30 border-b border-slate-800 bg-slate-900/85 backdrop-blur">
         <div class="flex h-14 items-center gap-3 pl-16 pr-4 sm:pl-4 lg:px-6">
+          <button
+            type="button"
+            class="hidden h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-300 transition-colors hover:bg-slate-800 hover:text-white focus:ring-2 focus:ring-blue-500/60 focus:outline-none lg:grid"
+            :aria-label="sidebarDesktopHidden ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'"
+            aria-controls="app-sidebar"
+            :aria-expanded="!sidebarDesktopHidden"
+            @click="toggleDesktopSidebar"
+          >
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+              <path v-if="sidebarDesktopHidden" d="M4 5h16M4 12h16M4 19h16" />
+              <path v-else d="M4 5h16M4 12h10M4 19h16M16 9l3 3-3 3" />
+            </svg>
+          </button>
           <div class="flex min-w-0 flex-1 items-center gap-2 text-sm">
             <span class="shrink-0 font-bold text-white lg:hidden">BioChemVerse</span>
             <template v-if="pageTitle !== 'Beranda'">

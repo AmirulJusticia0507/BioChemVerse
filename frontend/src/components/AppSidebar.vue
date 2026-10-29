@@ -2,7 +2,7 @@
 import { onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
-import { sidebarCollapsed, sidebarMobileOpen } from '../composables/useSidebar.js'
+import { sidebarCollapsed, sidebarDesktopHidden, sidebarMobileOpen } from '../composables/useSidebar.js'
 import { useTheme } from '../composables/useTheme.js'
 import PwaStatus from './PwaStatus.vue'
 
@@ -93,6 +93,7 @@ onBeforeUnmount(() => {
     :class="[
       collapsed ? 'lg:w-[72px]' : 'lg:w-60',
       mobileOpen ? 'w-64 translate-x-0' : 'w-64 -translate-x-full lg:translate-x-0',
+      sidebarDesktopHidden ? 'lg:!-translate-x-full' : 'lg:!translate-x-0',
     ]"
     :aria-label="'Navigasi utama'"
   >
