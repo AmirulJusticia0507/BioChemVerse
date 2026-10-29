@@ -74,7 +74,7 @@ const footerLinks = [
         <div class="flex h-14 items-center gap-3 pl-16 pr-4 sm:pl-4 lg:px-6">
           <button
             type="button"
-            class="hidden h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-300 transition-colors hover:bg-slate-800 hover:text-white focus:ring-2 focus:ring-blue-500/60 focus:outline-none lg:grid"
+            class="hidden h-9 shrink-0 items-center gap-2 rounded-lg px-2 text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-white focus:ring-2 focus:ring-blue-500/60 focus:outline-none lg:flex"
             :aria-label="sidebarDesktopHidden ? 'Tampilkan sidebar' : 'Sembunyikan sidebar'"
             aria-controls="app-sidebar"
             :aria-expanded="!sidebarDesktopHidden"
@@ -84,6 +84,7 @@ const footerLinks = [
               <path v-if="sidebarDesktopHidden" d="M4 5h16M4 12h16M4 19h16" />
               <path v-else d="M4 5h16M4 12h10M4 19h16M16 9l3 3-3 3" />
             </svg>
+            <span>{{ sidebarDesktopHidden ? 'Tampilkan sidebar' : 'Sembunyikan sidebar' }}</span>
           </button>
           <div class="flex min-w-0 flex-1 items-center gap-2 text-sm">
             <span class="shrink-0 font-bold text-white lg:hidden">BioChemVerse</span>
