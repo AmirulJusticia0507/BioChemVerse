@@ -21,10 +21,11 @@
           </button>
         </div>
 
-        <div class="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl shadow-blue-950/30">
+        <div class="relative aspect-3/4 w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl shadow-blue-950/30">
           <iframe
             :key="variant"
-            :src="sketchfabModel.embedUrl"
+            ref="sketchfabFrame"
+            src="about:blank"
             :title="`Model 3D anatomi ${variantLabel}`"
             class="absolute inset-0 h-full w-full"
             allow="autoplay; fullscreen; xr-spatial-tracking"
@@ -60,7 +61,7 @@
           viewBox="0 0 300 620"
           role="img"
           :aria-label="`Ilustrasi anatomi tubuh manusia ${variantLabel} beserta organ dalam`"
-          class="mx-auto h-auto w-72 text-slate-400 sm:w-[300px]"
+          class="mx-auto h-auto w-72 text-slate-400 sm:w-75"
         >
         <defs>
           <radialGradient id="skinFill" cx="46%" cy="26%" r="78%">
@@ -143,7 +144,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
@@ -156,19 +157,20 @@ const variant = ref('pria')
 const variantLabel = computed(() => variants.find((v) => v.id === variant.value)?.label ?? '')
 const sketchfabModel = computed(() => ({
   pria: {
+    id: '0954aa04666d45aab9633009318f7b66',
     title: 'Male base muscular anatomy',
     author: 'CharacterZone',
     sourceUrl: 'https://sketchfab.com/3d-models/male-base-muscular-anatomy-0954aa04666d45aab9633009318f7b66',
-    embedUrl: 'https://sketchfab.com/models/0954aa04666d45aab9633009318f7b66/embed?autospin=0&ui_theme=dark&ui_infos=0',
   },
   wanita: {
+    id: 'aa022f8c27e04aea89e731f66484a299',
     title: 'Female muscle human body',
     author: 'Rena',
     sourceUrl: 'https://sketchfab.com/3d-models/female-muscle-human-body-aa022f8c27e04aea89e731f66484a299',
-    embedUrl: 'https://sketchfab.com/models/aa022f8c27e04aea89e731f66484a299/embed?autospin=0&ui_theme=dark&ui_infos=0',
   },
 })[variant.value])
 const canvas = ref(null)
+const sketchfabFrame = ref(null)
 
 let renderer
 let scene
@@ -177,6 +179,59 @@ let controls
 let body
 let animationFrame
 let resizeObserver
+let sketchfabApi
+
+const focusPoints = {
+  kepala: 3.2,
+  leher: 2.55,
+  dada: 1.65,
+  jantung: 1.6,
+  'hati': 0.85,
+  lambung: 0.78,
+  usus: 0.2,
+  ginjal: 0.55,
+  'serat-otot': 1.3,
+  payudara: 1.65,
+  panggul: -0.55,
+  'reproduksi-wanita': -0.7,
+  tulang: 0.8,
+  lengan: 1.0,
+  kaki: -2.1,
+}
+
+const focusRegion = (id) => {
+  const y = focusPoints[id]
+  if (sketchfabApi && y !== undefined) sketchfabApi.setCameraLookAt([0, y, 6], [0, y, 0], 0.8)
+}
+
+const loadSketchfabScript = () => new Promise((resolve, reject) => {
+  if (window.Sketchfab) return resolve()
+  const script = document.createElement('script')
+  script.src = 'https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js'
+  script.onload = resolve
+  script.onerror = reject
+  document.head.append(script)
+})
+
+const loadSketchfabModel = async () => {
+  await nextTick()
+  if (!sketchfabFrame.value) return
+  try {
+    await loadSketchfabScript()
+    const client = new window.Sketchfab('1.12.1', sketchfabFrame.value)
+    client.init(sketchfabModel.value.id, {
+      autostart: 1,
+      ui_theme: 'dark',
+      ui_infos: 0,
+      success(api) {
+        sketchfabApi = api
+        api.start()
+      },
+    })
+  } catch {
+    sketchfabApi = null
+  }
+}
 
 const addPart = (parent, geometry, material, position, scale = [1, 1, 1]) => {
   const mesh = new THREE.Mesh(geometry, material)
@@ -263,6 +318,7 @@ const resizeScene = () => {
 }
 
 onMounted(() => {
+  loadSketchfabModel()
   if (!canvas.value) return
   scene = new THREE.Scene()
   camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100)
@@ -295,6 +351,8 @@ onMounted(() => {
 
 watch(variant, () => {
   selected.value = null
+  sketchfabApi = null
+  loadSketchfabModel()
   if (scene) buildBody()
 })
 
@@ -327,7 +385,10 @@ const orderedRegions = computed(() => [
   ...visibleRegions.value.filter((r) => drawnLast.includes(r.id)),
 ])
 
-const select = (id) => (selected.value = selected.value === id ? null : id)
+const select = (id) => {
+  selected.value = selected.value === id ? null : id
+  if (selected.value) focusRegion(selected.value)
+}
 
 const regionClass = (region) =>
   selected.value === region.id ? 'fill-blue-500/60 stroke-blue-100' : region.tint
