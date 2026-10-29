@@ -77,7 +77,8 @@ Semua komponen dibuat sekali lalu dipakai ulang (`frontend/src/components/`):
 
 ## 6. Ilustrasi Anatomi & Sains
 
-- Anatomi: siluet tubuh laki-laki proporsi ±7,5 kepala (`fill` gradien `slate-900`→`slate-700`) dengan organ dalam berwarna lembut (paru `sky-500`, jantung `red-600`, hati `orange-600`, lambung `rose-500`, usus `amber-500`, ginjal `violet-500`, panggul `teal-400`) — lihat `AnatomyBody.vue`.
+- Anatomi: siluet tubuh proporsi ±7,5 kepala (`fill` gradien `slate-900`→`slate-700`) dengan organ dalam berwarna lembut (paru `sky-500`, jantung `red-600`, hati `orange-600`, lambung `rose-500`, usus `amber-500`, ginjal `violet-500`, panggul `teal-400`) — lihat `AnatomyBody.vue`.
+- Tersedia dua tampilan lewat toggle segmented (`Pria` default, `Wanita`). Tampilan wanita memakai siluet bahu sempit/pinggang/panggul lebar dan menambah organ khusus: payudara `pink-500` dan reproduksi wanita `fuchsia-500`. Organ khusus wanita tidak dirender pada tampilan pria, dan panel keterangannya memakai `itemsWanita` bila ada.
 - Saat dipilih, satu bagian memakai isian aksen `fill-blue-500/60` dengan garis `blue-100`; organ dalam digambar di atas bagian luar agar klik tidak tertutup.
 - Setiap bagian interaktif SVG wajib `role="button"` + `tabindex="0"` + `aria-label` + `aria-pressed`.
 - Molekul: ikatan `stroke-slate-400`, atom mengikuti warna CPK (O = merah, N = biru, C = abu gelap).

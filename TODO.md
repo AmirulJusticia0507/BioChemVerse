@@ -11,3 +11,4 @@
 - [x] completed | high | Frontend: Vue Router + halaman dasar (Beranda, Modul, 404)
 - [ ] pending | medium | Frontend: halaman Login/Register terhubung API
 - [ ] pending | medium | Frontend: tampil progres modul saat login
+- [x] completed | medium | Anatomi: tampilan tubuh wanita (siluet, payudara, reproduksi) pada kerangka anatomi

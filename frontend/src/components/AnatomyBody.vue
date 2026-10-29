@@ -1,13 +1,32 @@
 <template>
   <div class="flex flex-col items-center">
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,260px)] lg:items-start">
-      <!-- Ilustrasi anatomi: siluet tubuh laki-laki + organ dalam -->
-      <svg
-        viewBox="0 0 300 620"
-        role="img"
-        aria-label="Ilustrasi anatomi tubuh manusia laki-laki beserta organ dalam"
-        class="mx-auto h-auto w-72 text-slate-400 sm:w-[300px]"
-      >
+      <!-- Ilustrasi anatomi: pilih tampilan tubuh pria (default) atau wanita -->
+      <div class="flex flex-col items-center">
+        <div
+          class="mb-3 inline-flex rounded-lg bg-slate-800 p-1 ring-1 ring-slate-700"
+          role="group"
+          aria-label="Pilih tampilan anatomi"
+        >
+          <button
+            v-for="opt in variants"
+            :key="opt.id"
+            type="button"
+            class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:ring-2 focus:ring-blue-500/50 focus:outline-none"
+            :class="variant === opt.id ? 'bg-blue-500 text-white' : 'text-slate-300 hover:bg-slate-700'"
+            :aria-pressed="variant === opt.id"
+            @click="variant = opt.id"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+
+        <svg
+          viewBox="0 0 300 620"
+          role="img"
+          :aria-label="`Ilustrasi anatomi tubuh manusia ${variantLabel} beserta organ dalam`"
+          class="mx-auto h-auto w-72 text-slate-400 sm:w-[300px]"
+        >
         <defs>
           <radialGradient id="skinFill" cx="46%" cy="26%" r="78%">
             <stop offset="0%" stop-color="#3B4A61" />
@@ -22,26 +41,21 @@
 
         <!-- Siluet tubuh: leher → bahu → lengan → panggul → kaki → naik kembali → kepala -->
         <g stroke-linejoin="round" stroke-linecap="round">
-          <path :d="bodyPath" fill="url(#skinFill)" stroke="currentColor" stroke-width="1.3" />
-          <!-- celana pendek -->
-          <path :d="shortsPath" fill="url(#clothFill)" stroke="currentColor" stroke-width="1.2" />
+          <path :d="silPath('bodyPath')" fill="url(#skinFill)" stroke="currentColor" stroke-width="1.3" />
+          <!-- pakaian dalam -->
+          <path :d="silPath('shortsPath')" fill="url(#clothFill)" stroke="currentColor" stroke-width="1.2" />
           <!-- telinga -->
-          <path d="M124 44 C120 42 118 48 119 54 C120 60 122 63 125 62 Z" fill="url(#skinFill)" stroke="currentColor" stroke-width="1.1" />
-          <path d="M176 44 C180 42 182 48 181 54 C180 60 178 63 175 62 Z" fill="url(#skinFill)" stroke="currentColor" stroke-width="1.1" />
+          <path
+            :d="variant === 'wanita' ? 'M125 44 C121 42 119 48 120 54 C121 60 123 63 126 62 Z' : 'M124 44 C120 42 118 48 119 54 C120 60 122 63 125 62 Z'"
+            fill="url(#skinFill)" stroke="currentColor" stroke-width="1.1"
+          />
+          <path
+            :d="variant === 'wanita' ? 'M175 44 C179 42 181 48 180 54 C179 60 177 63 174 62 Z' : 'M176 44 C180 42 182 48 181 54 C180 60 178 63 175 62 Z'"
+            fill="url(#skinFill)" stroke="currentColor" stroke-width="1.1"
+          />
           <!-- lekuk otot & permukaan -->
           <g fill="none" stroke="currentColor" stroke-width="0.9" opacity="0.55">
-            <path d="M123 120 C133 127 167 127 177 120" />
-            <path d="M137 134 C141 147 141 162 138 174" />
-            <path d="M163 134 C159 147 159 162 162 174" />
-            <path d="M150 196 V236" opacity="0.4" />
-            <path d="M150 254 V304" opacity="0.4" />
-            <path d="M124 228 C118 250 116 272 118 292" opacity="0.35" />
-            <path d="M176 228 C182 250 184 272 182 292" opacity="0.35" />
-            <path d="M118 430 C114 452 114 474 116 496" />
-            <path d="M182 430 C186 452 186 474 184 496" />
-            <path d="M113 392 C120 389 130 389 137 392 M163 392 C170 389 180 389 187 392" />
-            <path d="M57 206 C54 230 51 252 49 272" opacity="0.45" />
-            <path d="M243 206 C246 230 249 252 251 272" opacity="0.45" />
+            <path v-for="(d, i) in silPath('detailPaths')" :key="i" :d="d" />
           </g>
         </g>
 
@@ -60,11 +74,12 @@
           @keydown.space.prevent="select(region.id)"
         >
           <g :class="[regionClass(region), 'transition-colors duration-150']">
-            <path v-for="(d, i) in region.d" :key="i" :d="d" />
+            <path v-for="(d, i) in regionPaths(region)" :key="i" :d="d" />
             <circle v-for="(c, i) in region.dots ?? []" :key="'c' + i" :cx="c[0]" :cy="c[1]" :r="c[2]" />
           </g>
         </g>
-      </svg>
+        </svg>
+      </div>
 
       <!-- Panel keterangan -->
       <aside class="w-full rounded-xl bg-slate-800 p-5 ring-1 ring-slate-700 lg:sticky lg:top-6">
@@ -73,8 +88,8 @@
         <p class="mt-2 text-sm text-slate-300">
           {{ selectedInfo?.desc ?? 'Pilih organ atau bagian tubuh pada ilustrasi untuk melihat keterangannya.' }}
         </p>
-        <ul v-if="selectedInfo?.items" class="mt-4 space-y-1.5 text-sm text-slate-300">
-          <li v-for="item in selectedInfo.items" :key="item" class="flex gap-2">
+        <ul v-if="selectedItems" class="mt-4 space-y-1.5 text-sm text-slate-300">
+          <li v-for="item in selectedItems" :key="item" class="flex gap-2">
             <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" aria-hidden="true" />
             <span>{{ item }}</span>
           </li>
@@ -95,21 +110,47 @@
 <script setup>
 import { computed, ref } from 'vue'
 
+// Tampilan anatomi: siluet pria (default) atau wanita.
+const variants = [
+  { id: 'pria', label: 'Pria' },
+  { id: 'wanita', label: 'Wanita' },
+]
+const variant = ref('pria')
+const variantLabel = computed(() => variants.find((v) => v.id === variant.value)?.label ?? '')
+
 const selected = ref(null)
-const selectedInfo = computed(() => regions.find((r) => r.id === selected.value) ?? null)
+const selectedInfo = computed(() => visibleRegions.value.find((r) => r.id === selected.value) ?? null)
+
+// Bagian khusus wanita (payudara, reproduksi) hanya tampil pada tampilan wanita.
+const visibleRegions = computed(() => (variant.value === 'wanita' ? regions : regions.filter((r) => !r.femaleOnly)))
+
+// Teks panel ikut berubah bila bagian itu punya deskripsi khusus wanita.
+const selectedItems = computed(() =>
+  variant.value === 'wanita' ? (selectedInfo.value?.itemsWanita ?? selectedInfo.value?.items) : selectedInfo.value?.items,
+)
+
+// Bagian tubuh wanita memakai geo-nya sendiri bila ada, sisanya sama dengan pria.
+const regionPaths = (region) => (variant.value === 'wanita' ? (region.geo?.wanita ?? region.d) : region.d)
 
 // Bagian luar (lengan, kaki, tulang, panggul) digambar lebih dulu; organ dalam digambar terakhir
 // supaya dapat diklik di area yang bertumpang tindih (mis. jantung di depan kolumna).
-const drawnLast = ['kepala', 'leher', 'dada', 'jantung', 'hati', 'lambung', 'usus', 'ginjal']
+const drawnLast = ['kepala', 'leher', 'dada', 'payudara', 'reproduksi-wanita', 'jantung', 'hati', 'lambung', 'usus', 'ginjal']
 const orderedRegions = computed(() => [
-  ...regions.filter((r) => !drawnLast.includes(r.id)),
-  ...regions.filter((r) => drawnLast.includes(r.id)),
+  ...visibleRegions.value.filter((r) => !drawnLast.includes(r.id)),
+  ...visibleRegions.value.filter((r) => drawnLast.includes(r.id)),
 ])
 
 const select = (id) => (selected.value = selected.value === id ? null : id)
 
 const regionClass = (region) =>
   selected.value === region.id ? 'fill-blue-500/60 stroke-blue-100' : region.tint
+
+// Rangka siluet per tampilan: garis luar, celana, dan detail permukaan.
+const silhouettes = {
+  pria: { body: 'bodyPath', shorts: 'shortsPath', details: 'detailPaths' },
+  wanita: { body: 'bodyPathWanita', shorts: 'shortsPathWanita', details: 'detailPathsWanita' },
+}
+const silPath = (key) => ({ pria: { bodyPath, shortsPath, detailPaths }, wanita: { bodyPathWanita, shortsPathWanita, detailPaths: detailPathsWanita } })[variant.value][key]
 
 // Siluet laki-laki, ±7,5 kepala: kepala 14–92, bahu 112–130, panggul ±360, tumit 600.
 const bodyPath = [
@@ -177,6 +218,113 @@ const bodyPath = [
 
 const shortsPath =
   'M96 338 C112 334 136 334 150 340 C164 334 188 334 204 338 C208 352 208 366 206 382 C203 398 203 410 202 424 C198 442 190 456 184 468 L168 464 C166 444 166 424 164 408 L150 404 L136 408 C134 424 134 444 132 464 L116 468 C110 456 102 442 98 424 C97 410 97 398 94 382 C92 366 92 352 96 338 Z'
+
+const detailPaths = [
+  'M123 120 C133 127 167 127 177 120',
+  'M137 134 C141 147 141 162 138 174',
+  'M163 134 C159 147 159 162 162 174',
+  'M150 196 V236',
+  'M150 254 V304',
+  'M124 228 C118 250 116 272 118 292',
+  'M176 228 C182 250 184 272 182 292',
+  'M118 430 C114 452 114 474 116 496',
+  'M182 430 C186 452 186 474 184 496',
+  'M113 392 C120 389 130 389 137 392 M163 392 C170 389 180 389 187 392',
+  'M57 206 C54 230 51 252 49 272',
+  'M243 206 C246 230 249 252 251 272',
+]
+
+// Siluet wanita, proporsi ±7,5 kepala: bahu lebih sempit (108–192), pinggang ±88,
+// panggul ±84, payudara di toraks atas (142–162), tumit tetap 600.
+const bodyPathWanita = [
+  'M140 88',
+  'C130 92 125 102 124 114',
+  'C126 126 114 128 104 132',
+  'C92 138 84 150 81 168',
+  'C79 192 75 222 72 252',
+  'C70 282 67 310 66 334',
+  'C65 352 64 370 64 386',
+  'C63 398 59 410 54 421',
+  'C49 432 45 442 44 452',
+  'C43 461 45 467 50 468',
+  'C56 469 60 464 62 456',
+  'C66 442 73 426 78 410',
+  'C83 393 88 375 90 358',
+  'C92 340 94 322 95 306',
+  'C96 292 96 280 96 270',
+  'C97 262 98 256 99 250',
+  'C101 264 102 284 102 306',
+  'C102 330 100 354 98 378',
+  'C96 402 96 428 96 452',
+  'C96 482 94 512 94 538',
+  'C93 560 92 580 96 592',
+  'C99 602 107 604 113 600',
+  'C118 597 118 590 116 580',
+  'C113 562 112 540 112 516',
+  'C112 490 113 462 114 436',
+  'C115 412 116 395 120 384',
+  'C126 376 137 372 150 372',
+  'C163 372 174 376 180 384',
+  'C184 395 185 412 186 436',
+  'C187 462 188 490 188 516',
+  'C188 540 187 562 184 580',
+  'C182 590 182 597 187 600',
+  'C193 604 201 602 204 592',
+  'C208 580 207 560 206 538',
+  'C206 512 204 482 204 452',
+  'C204 428 204 402 202 378',
+  'C200 354 198 330 198 306',
+  'C198 284 199 264 201 250',
+  'C202 256 203 262 204 270',
+  'C204 280 204 292 205 306',
+  'C206 322 208 340 210 358',
+  'C212 375 217 393 222 410',
+  'C227 426 234 442 238 456',
+  'C240 464 244 469 250 468',
+  'C255 467 257 461 256 452',
+  'C255 442 251 432 246 421',
+  'C241 410 237 398 236 386',
+  'C236 370 235 352 234 334',
+  'C233 310 230 282 228 252',
+  'C225 222 221 192 219 168',
+  'C216 150 208 138 196 132',
+  'C186 128 174 126 176 114',
+  'C175 102 175 94 170 86',
+  'C169 76 168 64 163 56',
+  'C165 46 163 36 158 28',
+  'C154 18 146 14 140 18',
+  'C132 22 128 32 130 42',
+  'C127 50 126 62 128 72',
+  'C131 79 134 84 140 88',
+  'Z',
+].join(' ')
+
+const shortsPathWanita =
+  'M98 342 C112 338 135 338 150 344 C165 338 188 338 202 342 C205 356 204 366 202 382 C199 398 199 410 198 424 C194 442 187 456 182 468 L168 464 C166 444 166 424 164 408 L150 404 L136 408 C134 424 134 444 132 464 L118 468 C112 456 105 442 101 424 C100 410 100 398 97 382 C95 366 95 356 98 342 Z'
+
+const detailPathsWanita = [
+  // klavikula & tulang selangka
+  'M126 120 C136 127 164 127 174 120',
+  // payudara
+  'M134 146 C132 158 136 170 144 173',
+  'M166 146 C168 158 164 170 156 173',
+  // garis sternum di antara payudara
+  'M150 132 V180',
+  // pinggang
+  'M122 234 C118 252 116 272 117 290',
+  'M178 234 C182 252 184 272 183 290',
+  // garis otot perut
+  'M150 200 V272',
+  // panggul
+  'M104 348 C112 340 122 336 130 336',
+  'M196 348 C188 340 178 336 170 336',
+  // lutut & betis
+  'M108 392 C112 389 120 389 123 392 M177 392 C180 389 188 389 192 392',
+  'M110 430 C107 452 107 474 110 496',
+  'M190 430 C193 452 193 474 190 496',
+  'M76 206 C73 230 71 252 70 272',
+  'M224 206 C227 230 229 252 230 272',
+]
 
 const line = 'stroke-[1.1] fill-none'
 const filled = 'stroke-[1.1]'
@@ -288,10 +436,24 @@ const regions = [
     ],
   },
   {
+    id: 'payudara',
+    label: 'Payudara',
+    desc: 'Kelenjar susu (mamma) di jaringan adiposa toraks, yang membesar karena estrogen dan progesteron.',
+    items: ['Glandula mammaria & lobus', 'Duktus laktiferus & sinus laktiferus', 'Papilla mammae & areola', 'Vena & limfonodi aksila'],
+    tint: `fill-pink-500/45 stroke-pink-200 ${filled}`,
+    femaleOnly: true,
+    d: [
+      'M133 140 C143 135 149 145 148 158 C147 171 141 179 133 177 C126 175 124 162 127 152 Z',
+      'M167 140 C157 135 151 145 152 158 C153 171 159 179 167 177 C174 175 176 162 173 152 Z',
+      'M138 152 C140 150 142 150 144 152 M156 152 C158 150 160 150 162 152',
+    ],
+  },
+  {
     id: 'panggul',
     label: 'Panggul & Perkemihan',
     desc: 'Gelang panggul menopang saluran kemih dan organ reproduksi.',
     items: ['Os coxae (ilium, iskium, pubis)', 'Kandung kemih', 'Ureter & uretra', 'Organ reproduksi pria'],
+    itemsWanita: ['Os coxae (ilium, iskium, pubis)', 'Kandung kemih & uretra', 'Ureter', 'Apertura pelvis (lebih lebar)'],
     tint: `fill-teal-400/50 stroke-teal-200 ${filled}`,
     d: [
       // kandung kemih
@@ -299,6 +461,34 @@ const regions = [
       // garis panggul (ilium)
       'M118 330 C128 320 142 320 148 328 M182 330 C172 320 158 320 152 328 M114 348 C120 340 128 336 134 336 M186 348 C180 340 172 336 166 336',
     ],
+    // Panggul wanita: lebih lebar, sudut subpubik lebih besar, apertura pelvis melebar.
+    geo: {
+      wanita: [
+        'M141 334 C147 329 154 329 157 336 C159 345 154 351 149 351 C144 351 138 345 140 339 Z',
+        'M108 330 C120 318 138 318 147 327 M192 330 C180 318 162 318 153 327 M102 350 C110 341 122 337 131 337 M198 350 C190 341 178 337 169 337',
+        'M132 340 C126 344 118 346 112 344 M168 340 C174 344 182 346 188 344',
+      ],
+    },
+  },
+  {
+    id: 'reproduksi-wanita',
+    label: 'Reproduksi Wanita',
+    desc: 'Uterus, tuba uterina, dan ovarium terletak di kavum pelvis antara rektum dan vesika urinaria.',
+    items: ['Uterus (fundus, korpus, serviks)', 'Tuba uterina (fallopi)', 'Ovarium & folikel', 'Vagina', 'Endometrium & siklus haid'],
+    tint: `fill-fuchsia-500/70 stroke-fuchsia-200 ${filled}`,
+    femaleOnly: true,
+    dots: [[129, 340, 2.6], [171, 340, 2.6]],
+    geo: {
+      wanita: [
+        // uterus
+        'M143 337 C147 329 153 329 157 337 C159 346 158 356 157 362 C153 366 147 366 143 362 C142 356 141 346 143 337 Z',
+        // tuba uterina
+        'M141 337 C134 332 128 334 127 340 C126 345 131 346 133 342 M159 337 C166 332 172 334 173 340 C174 345 169 346 167 342',
+        // ovarium (circles via dots)
+        // serviks & vagina
+        'M146 366 C147 374 147 380 148 386 M154 366 C153 374 153 380 152 386',
+      ],
+    },
   },
   {
     id: 'tulang',
