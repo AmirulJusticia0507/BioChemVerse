@@ -3,6 +3,7 @@ import { onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import { sidebarCollapsed, sidebarMobileOpen } from '../composables/useSidebar.js'
+import PwaStatus from './PwaStatus.vue'
 
 const { user, isLoggedIn, logout } = useAuth()
 const route = useRoute()
@@ -155,8 +156,9 @@ onBeforeUnmount(() => {
       </template>
     </nav>
 
-    <!-- Akun + toggle desktop -->
+    <!-- Akun + status PWA + toggle desktop -->
     <div class="shrink-0 border-t border-slate-800 p-2">
+      <PwaStatus :collapsed="collapsed" />
       <template v-if="isLoggedIn">
         <div class="flex items-center gap-2 rounded-lg px-2 py-2" :class="collapsed ? 'lg:justify-center lg:px-0' : ''">
           <span

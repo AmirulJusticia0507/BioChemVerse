@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="BioChemVerse">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e293b"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Tabung reaksi -->
+  <g fill="none" stroke="#60a5fa" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M196 152h120"/>
+    <path d="M214 152v128a42 42 0 0 0 84 0V152"/>
+  </g>
+  <path d="M214 236h84v44a42 42 0 0 1-84 0z" fill="#3b82f6" fill-opacity=".55"/>
+  <g fill="#93c5fd">
+    <circle cx="256" cy="132" r="16"/>
+    <circle cx="322" cy="118" r="10"/>
+    <circle cx="190" cy="112" r="12"/>
+    <circle cx="348" cy="172" r="8"/>
+    <circle cx="164" cy="180" r="8"/>
+  </g>
+</svg>

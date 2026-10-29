@@ -1,12 +1,37 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from './composables/useAuth.js'
 import { sidebarWidth } from './composables/useSidebar.js'
+import { applyUpdate, bindOnlineStatus, updateReady } from './composables/usePwaState.js'
 import AppSidebar from './components/AppSidebar.vue'
 
 const { user, isLoggedIn, logout } = useAuth()
 const route = useRoute()
+
+// Status jaringan (online/offline) untuk banner mode offline di sidebar.
+let unbindOnline = null
+onMounted(() => {
+  unbindOnline = bindOnlineStatus()
+
+  // Service worker hanya ada di hasil build; di `npm run dev` import ini kosong.
+  if ('serviceWorker' in navigator) {
+    import('virtual:pwa-register')
+      .then((mod) => {
+        const registerSW = mod?.registerSW ?? mod?.default
+        if (typeof registerSW !== 'function') return
+        applyUpdate.value = registerSW({
+          immediate: true,
+          onNeedRefresh: () => (updateReady.value = true),
+          onOfflineReady: () => {},
+        })
+      })
+      .catch(() => {
+        /* build tanpa PWA (mis. dev) — abaikan */
+      })
+  }
+})
+onBeforeUnmount(() => unbindOnline?.())
 
 // Top bar menampilkan brand + judul halaman aktif (breadcrumb), supaya tidak
 // menduplikasi label menu yang sudah terlihat di sidebar.
