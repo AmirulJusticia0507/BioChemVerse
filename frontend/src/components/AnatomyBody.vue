@@ -166,7 +166,7 @@
             <path v-if="selected === 'payudara'" d="M116 67 C121 56 132 60 132 71 M158 67 C153 56 142 60 142 71" fill="none" stroke="#f472b6" stroke-width="10" stroke-linecap="round" />
             <path v-if="selected === 'leher'" d="M132 43 V57 M142 43 V57" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" />
           </svg>
-          <figcaption class="px-1 pt-1 text-center text-xs text-slate-400">Diagram fokus konseptual: {{ selectedInfo?.label }}.</figcaption>
+          <figcaption class="px-1 pt-1 text-center text-xs text-slate-400">Tubuh tetap utuh; bagian {{ selectedInfo?.label }} disorot.</figcaption>
         </figure>
         <ul v-if="selectedItems" class="mt-4 space-y-1.5 text-sm text-slate-300">
           <li v-for="item in selectedItems" :key="item" class="flex gap-2">
@@ -224,29 +224,6 @@ let body
 let animationFrame
 let resizeObserver
 let sketchfabApi
-
-const focusPoints = {
-  kepala: 3.2,
-  leher: 2.55,
-  dada: 1.65,
-  jantung: 1.6,
-  'hati': 0.85,
-  lambung: 0.78,
-  usus: 0.2,
-  ginjal: 0.55,
-  'serat-otot': 1.3,
-  payudara: 1.65,
-  panggul: -0.55,
-  'reproduksi-wanita': -0.7,
-  tulang: 0.8,
-  lengan: 1.0,
-  kaki: -2.1,
-}
-
-const focusRegion = (id) => {
-  const y = focusPoints[id]
-  if (sketchfabApi && y !== undefined) sketchfabApi.setCameraLookAt([0, y, 6], [0, y, 0], 0.8)
-}
 
 const loadSketchfabScript = () => new Promise((resolve, reject) => {
   if (window.Sketchfab) return resolve()
@@ -431,7 +408,7 @@ const orderedRegions = computed(() => [
 
 const select = (id) => {
   selected.value = selected.value === id ? null : id
-  if (selected.value) focusRegion(selected.value)
+  if (selected.value) sketchfabApi?.recenterCamera()
 }
 
 const regionClass = (region) =>
