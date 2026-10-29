@@ -9,6 +9,7 @@ const router = useRouter()
 
 const username = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const error = ref('')
 
 async function submit() {
@@ -52,11 +53,11 @@ async function submit() {
       </div>
 
       <div>
-        <label for="login-password" class="mb-1 block text-sm text-slate-300">Password</label>
+        <div class="mb-1 flex items-center justify-between"><label for="login-password" class="text-sm text-slate-300">Password</label><button type="button" class="rounded p-1 text-slate-400 hover:text-slate-200 focus:ring-2 focus:ring-blue-500/60 focus:outline-none" :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'" @click="showPassword = !showPassword"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path v-if="showPassword" d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M2.3 10.1a1.7 1.7 0 0 0 0 1.8C3.2 13.3 6.7 18 12 18c1 0 2-.2 2.9-.5M9.9 4.2A10.9 10.9 0 0 1 12 4c5.3 0 8.8 4.7 9.7 6.1a1.7 1.7 0 0 1 0 1.8 18.2 18.2 0 0 1-3.1 3.6" /><path v-else d="M2.3 10.1a1.7 1.7 0 0 0 0 1.8C3.2 13.3 6.7 18 12 18s8.8-4.7 9.7-6.1a1.7 1.7 0 0 0 0-1.8C20.8 9.7 17.3 5 12 5S3.2 9.7 2.3 10.1Z" /><circle v-if="!showPassword" cx="12" cy="11" r="3" /></svg></button></div>
         <input
           id="login-password"
           v-model="password"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           autocomplete="current-password"
           required
           placeholder="••••••••"

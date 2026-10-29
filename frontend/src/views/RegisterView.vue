@@ -10,6 +10,8 @@ const username = ref('')
 const email = ref('')
 const password = ref('')
 const confirm = ref('')
+const showPassword = ref(false)
+const showConfirm = ref(false)
 const error = ref('')
 
 async function submit() {
@@ -73,11 +75,11 @@ async function submit() {
       </div>
 
       <div>
-        <label for="reg-password" class="mb-1 block text-sm text-slate-300">Password</label>
+        <div class="mb-1 flex items-center justify-between"><label for="reg-password" class="text-sm text-slate-300">Password</label><button type="button" class="rounded p-1 text-slate-400 hover:text-slate-200 focus:ring-2 focus:ring-blue-500/60 focus:outline-none" :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'" @click="showPassword = !showPassword" aria-hidden="false">👁</button></div>
         <input
           id="reg-password"
           v-model="password"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           autocomplete="new-password"
           required
           minlength="8"
@@ -87,11 +89,11 @@ async function submit() {
       </div>
 
       <div>
-        <label for="reg-confirm" class="mb-1 block text-sm text-slate-300">Ulangi Password</label>
+        <div class="mb-1 flex items-center justify-between"><label for="reg-confirm" class="text-sm text-slate-300">Ulangi Password</label><button type="button" class="rounded p-1 text-slate-400 hover:text-slate-200 focus:ring-2 focus:ring-blue-500/60 focus:outline-none" :aria-label="showConfirm ? 'Sembunyikan konfirmasi password' : 'Tampilkan konfirmasi password'" @click="showConfirm = !showConfirm">👁</button></div>
         <input
           id="reg-confirm"
           v-model="confirm"
-          type="password"
+          :type="showConfirm ? 'text' : 'password'"
           autocomplete="new-password"
           required
           placeholder="ketik ulang password"
