@@ -144,7 +144,9 @@ biochemverse/
 | PostgreSQL + Redis (koneksi, skema, readiness) | ✅ |
 | Dokumentasi API (OpenAPI/Swagger) | ✅ |
 | CI/CD (GitHub Actions) | ✅ |
-| Auth JWT, router Vue, endpoint modul | ⏳ |
+| Vue Router (Beranda, Modul, Login, Daftar, 404) | ✅ |
+| Auth JWT (register/login/me + UI login-daftar) | ✅ |
+| CRUD progres modul (tampil & update saat login) | ✅ |
 | ChemSphere / ForensiLab / AnatomiMed (fitur inti) | ⏳ |
 
 Lihat [`TODO.md`](TODO.md) untuk daftar task terkini.

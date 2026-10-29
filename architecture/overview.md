@@ -77,11 +77,15 @@ BioChemVerse/
 │   └── go/                      # server health-check Go (stdlib)
 │       ├── main.go
 │       └── go.mod
-└── frontend/                    # Vue 3 + Vite + Tailwind v4
+└── frontend/                    # Vue 3 + Vite + Tailwind v4 (SPA)
     └── src/
-        ├── App.vue              # shell halaman
-        ├── style.css            # @import "tailwindcss"
-        └── components/AnatomyBody.vue   # SVG kerangka tubuh interaktif
+        ├── App.vue              # shell: header (nav + auth) + router-view
+        ├── router/index.js      # rute: /, /modules, /login, /register, 404
+        ├── api/client.js        # fetch wrapper + token JWT di localStorage
+        ├── composables/useAuth.js  # state login global (tanpa Pinia)
+        ├── views/               # HomeView, ModulesView, LoginView, RegisterView, NotFound
+        ├── style.css            # @import "tailwindcss" + kelas .nav-link
+        └── components/          # AnatomyBody.vue (ilustrasi anatomi)
 ```
 
 ---
@@ -156,7 +160,7 @@ Semua konfigurasi lewat environment / file `.env` (salin dari `.env.example`):
 | --- | --- | --- |
 | 0 | Scaffolding FE/BE, materi anatomi | ✅ selesai |
 | 1 | PostgreSQL + Redis, OpenAPI, CI/CD, Tailwind aktif | ✅ selesai |
-| 2 | Router Vue, autentikasi JWT, endpoint CRUD modul | ⏳ berikutnya |
-| 3 | ChemSphere: tabel periodik + visualisasi molekul 3D | ⏳ |
+| 2 | Router Vue, autentikasi JWT, endpoint CRUD modul | ✅ selesai |
+| 3 | ChemSphere: tabel periodik + visualisasi molekul 3D | ⏳ berikutnya |
 | 4 | ForensiLab: evidence graph + mini-game lab | ⏳ |
 | 5 | AnatomiMed: viewer 3D multi-layer + simulasi pasien | ⏳ |
