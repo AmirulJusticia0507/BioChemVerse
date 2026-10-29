@@ -3,9 +3,11 @@ import { onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuth } from '../composables/useAuth.js'
 import { sidebarCollapsed, sidebarMobileOpen } from '../composables/useSidebar.js'
+import { useTheme } from '../composables/useTheme.js'
 import PwaStatus from './PwaStatus.vue'
 
 const { user, isLoggedIn, logout } = useAuth()
+const { isDark, toggleTheme } = useTheme()
 const route = useRoute()
 
 const collapsed = sidebarCollapsed
@@ -159,6 +161,18 @@ onBeforeUnmount(() => {
     <!-- Akun + status PWA + toggle desktop -->
     <div class="shrink-0 border-t border-slate-800 p-2">
       <PwaStatus :collapsed="collapsed" />
+      <button
+        type="button"
+        class="mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-800 hover:text-white focus:ring-2 focus:ring-blue-500/60 focus:outline-none"
+        :class="collapsed ? 'lg:justify-center lg:px-0' : ''"
+        :title="collapsed ? (isDark ? 'Gunakan tema terang' : 'Gunakan tema gelap') : undefined"
+        :aria-label="isDark ? 'Gunakan tema terang' : 'Gunakan tema gelap'"
+        @click="toggleTheme"
+      >
+        <svg v-if="isDark" viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" /></svg>
+        <svg v-else viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z" /></svg>
+        <span :class="collapsed ? 'lg:hidden' : ''">{{ isDark ? 'Tema terang' : 'Tema gelap' }}</span>
+      </button>
       <template v-if="isLoggedIn">
         <div class="flex items-center gap-2 rounded-lg px-2 py-2" :class="collapsed ? 'lg:justify-center lg:px-0' : ''">
           <span
