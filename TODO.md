@@ -23,6 +23,6 @@
 - [x] completed | medium | Anatomi: diagram fokus untuk seluruh bagian tubuh
 - [x] completed | high | Anatomi: menu Operasi — katalog prosedur bedah + visual tata letak 3D (laparoskopi, apendektomi, kolesistektomi, herniorafi, seksio)
 - [x] completed | high | ChemSphere: halaman Bandingkan unsur + Belajar (flashcard, tren, kelarutan)
-- [ ] pending | high | ChemSphere: kalkulator stoikiometri (massa molar, penyetaraan, mol, larutan)
+- [x] completed | high | ChemSphere: kalkulator stoikiometri (massa molar, penyetaraan, mol, larutan)
 - [ ] pending | high | ChemSphere: kuis unsur (backend soal + attempt, halaman kuis)
 - [ ] pending | medium | ChemSphere: bookmark unsur (backend + tombol di detail unsur)

@@ -25,6 +25,9 @@ jobs:
       - name: Install dependency
         run: npm ci
 
+      - name: Unit test (mesin stoikiometri & parser rumus)
+        run: npm test
+
       - name: Build
         run: npm run build
 

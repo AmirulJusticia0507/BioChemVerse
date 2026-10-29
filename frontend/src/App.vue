@@ -20,6 +20,7 @@ const { user, isLoggedIn, logout } = useAuth()
           <RouterLink to="/tabel-periodik" class="nav-link">Tabel Periodik</RouterLink>
           <RouterLink to="/bandingkan" class="nav-link">Bandingkan</RouterLink>
           <RouterLink to="/belajar" class="nav-link">Belajar</RouterLink>
+          <RouterLink to="/kalkulator" class="nav-link">Kalkulator</RouterLink>
 
           <template v-if="isLoggedIn">
             <span class="ml-2 hidden text-slate-400 sm:inline">

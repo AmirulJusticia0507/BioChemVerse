@@ -35,6 +35,11 @@ const router = createRouter({
       component: () => import('../views/StudyView.vue'),
     },
     {
+      path: '/kalkulator',
+      name: 'calculator',
+      component: () => import('../views/CalculatorView.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
