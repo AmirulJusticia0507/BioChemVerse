@@ -9,7 +9,7 @@
 - [x] completed | high | Backend: autentikasi JWT (register, login, me)
 - [x] completed | high | Backend: endpoint CRUD progres modul (user_progress)
 - [x] completed | high | Frontend: Vue Router + halaman dasar (Beranda, Modul, 404)
-- [ ] pending | medium | Frontend: halaman Login/Register terhubung API
+- [x] completed | medium | Frontend: halaman Login/Register terhubung API
 - [ ] pending | medium | Frontend: tampil progres modul saat login
 - [x] completed | medium | Anatomi: tampilan tubuh wanita (siluet, payudara, reproduksi) pada kerangka anatomi
 - [x] completed | medium | Anatomi: karakter 3D interaktif pria dan wanita
