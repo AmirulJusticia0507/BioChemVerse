@@ -5,6 +5,6 @@
 - [x] completed | high | Integrasi kerangka anatomi tubuh (head, arms, torso, legs) di beranda
 - [x] completed | medium | Setup PostgreSQL + Redis
 - [x] completed | medium | Dokumentasi API (OpenAPI/Swagger)
-- [ ] pending | low | Setup CI/CD pipeline
+- [x] completed | low | Setup CI/CD pipeline
 filePath">
 C:\laragon\www\BioChemVerse\TODO.md

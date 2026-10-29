@@ -1,0 +1,54 @@
+name: CD
+
+# Packaging artefak rilis setiap push ke main.
+# Saat target deployment tersedia (VPS/VM/PaaS), isi job `deploy` di bawah.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: Package artefak
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Siapkan paket backend
+        run: |
+          mkdir -p release/backend
+          cp -r backend/python release/backend/python
+          cp -r backend/go release/backend/go
+          rm -rf release/backend/python/__pycache__
+
+      - name: Upload artefak
+        uses: actions/upload-artifact@v4
+        with:
+          name: biochemverse-${{ github.sha }}
+          path: |
+            frontend/dist
+            release/backend
+          retention-days: 14
+
+  # deploy:
+  #   name: Deploy ke target produksi
+  #   needs: package
+  #   runs-on: ubuntu-latest
+  #   environment: production
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Deploy (isi sesuai target: rspray/scp, Docker, Vercel, dsb.)
+  #       run: echo "TODO: implementasikan deployment"
