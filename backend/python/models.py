@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -146,3 +148,60 @@ class IonOut(BaseModel):
 class IonListResponse(BaseModel):
     total: int = Field(..., examples=[30])
     data: list[IonOut]
+
+
+# --- Kuis unsur -------------------------------------------------------------
+
+
+class QuizStartRequest(BaseModel):
+    topic: str = Field("campuran", examples=["simbol"], description="Topik: simbol|nomor-atom|kategori|golongan-periode|campuran")
+    count: int = Field(10, ge=1, le=30, description="Jumlah soal (1-30)")
+
+
+class QuizQuestionOut(BaseModel):
+    id: str = Field(..., examples=["0"])
+    question: str = Field(..., examples=["Apa simbol kimia untuk Besi?"])
+    options: list[str] = Field(..., examples=[["Fe", "F", "Fr", "Fm"]])
+
+
+class QuizStartResponse(BaseModel):
+    quiz_id: str = Field(..., description="Token sesi kuis (berlaku 1 jam, sekali pakai)")
+    topic: str
+    questions: list[QuizQuestionOut] = Field(..., description="Soal tanpa kunci jawaban")
+
+
+class QuizSubmitRequest(BaseModel):
+    quiz_id: str = Field(..., description="quiz_id dari /quiz/start")
+    answers: list[str] = Field(..., description="Jawaban berurutan sesuai soal")
+    duration_sec: int | None = Field(None, ge=0, le=86_400, description="Durasi pengerjaan (detik)")
+
+
+class QuizResultItem(BaseModel):
+    index: int
+    correct: str = Field(..., description="Jawaban benar")
+    given: str | None = Field(None, description="Jawaban pengguna")
+    is_correct: bool
+
+
+class QuizSubmitResponse(BaseModel):
+    attempt_id: int
+    topic: str
+    total: int
+    correct: int
+    score: int = Field(..., description="Persentase benar (0-100)")
+    results: list[QuizResultItem]
+
+
+class QuizAttemptOut(BaseModel):
+    id: int
+    topic: str
+    total: int
+    correct: int
+    score: int
+    duration_sec: int | None = None
+    created_at: datetime
+
+
+class QuizAttemptListResponse(BaseModel):
+    total: int
+    data: list[QuizAttemptOut]

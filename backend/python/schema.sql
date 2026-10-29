@@ -57,3 +57,17 @@ CREATE TABLE IF NOT EXISTS polyatomic_ions (
     charge      varchar(20),
     description text
 );
+
+-- Kuis unsur: riwayat percobaan per pengguna
+CREATE TABLE IF NOT EXISTS quiz_attempts (
+    id           bigserial PRIMARY KEY,
+    user_id      uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    topic        varchar(32) NOT NULL,
+    total        integer NOT NULL,
+    correct      integer NOT NULL,
+    score        integer NOT NULL,
+    duration_sec integer,
+    created_at   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user ON quiz_attempts (user_id, created_at DESC);

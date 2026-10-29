@@ -41,6 +41,9 @@ Konfigurasi dibaca dari environment / file `.env` (salin dari `.env.example` di 
 | GET | `/api/v1/elements/{simbol\|nomor}` | elements | Detail satu unsur (mis. `Fe` atau `26`) | 200 | 404 |
 | GET | `/api/v1/categories` | elements | 10 kategori tabel periodik + jumlah unsur | 200 | — |
 | GET | `/api/v1/ions` | elements | 30 ion poliatomik (rumus & muatan) | 200 | — |
+| POST | `/api/v1/quiz/start` | quiz | Bangkitkan soal kuis (kunci disimpan server-side) | 200 | 400/401/422/503 |
+| POST | `/api/v1/quiz/submit` | quiz | Nilai jawaban + simpan percobaan (sesi sekali pakai) | 200 | 400/401/403/404 |
+| GET | `/api/v1/quiz/attempts` | quiz | Riwayat percobaan kuis (`limit` 1–100) | 200 | 401 |
 
 ### 1. `GET /` — Info API
 
@@ -316,19 +319,75 @@ Field yang **tidak dikirim dipertahankan** (mis. kirim `{"completed": true}` saj
 
 ---
 
-## Konvensi
+## Kuis Unsur
 
-- **Base URL:** `http://localhost:8000`
-- **Format:** JSON, UTF-8
-- **CORS:** izin dibaca dari `CORS_ORIGINS` (default `http://localhost:5173`, `http://localhost:3000`). Mode development (`ENV` selain `production`/`staging`) juga mengizinkan semua origin `http://localhost:<port apa pun>` & `http://127.0.0.1:<port>` — misal Vite yang pindah ke `:5174`.
-- **Kode status:** `200` sukses · `503` dependency tidak siap · `404` path tidak ditemukan · `422` body/parameter tidak valid
-- **Skema error standar:** `{"detail": "..."}`
+Soal **dibangkitkan di server** dari data 118 unsur — kunci jawaban **tidak pernah** dikirim
+sebelum dinilai. Kunci disimpan di Redis (`quiz:<id>`, TTL 1 jam) dan **sekali pakai**:
+submit kedua untuk `quiz_id` yang sama → `404`.
 
-## Regenerasi Snapshot Spec
+**Topik:** `simbol` · `nomor-atom` · `kategori` · `golongan-periode` · `campuran`
+**Jumlah soal:** `1`–`30` (default `10`).
 
-Jalankan setelah mengubah endpoint agar `docs/openapi.json` selalu sinkron:
+### `POST /api/v1/quiz/start` → 200
 
 ```bash
-cd backend/python
-python -c "import json; from main import app; open(r'../../docs/openapi.json','w',encoding='utf-8').write(json.dumps(app.openapi(), indent=2, ensure_ascii=False))"
+curl -X POST http://localhost:8000/api/v1/quiz/start \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"topic": "campuran", "count": 3}'
 ```
+
+```json
+{
+  "quiz_id": "kq3v0YQ2bX...",
+  "topic": "campuran",
+  "questions": [
+    {
+      "id": "0",
+      "question": "Unsur Kripton (Kr) termasuk kategori apa?",
+      "options": ["Lantanida", "Logam Transisi", "Gas Mulia", "Metaloid"]
+    }
+  ]
+}
+```
+
+`400` topik tidak dikenal · `503` data unsur kurang/Redis mati.
+
+### `POST /api/v1/quiz/submit` → 200
+
+```bash
+curl -X POST http://localhost:8000/api/v1/quiz/submit \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"quiz_id": "kq3v0YQ2bX...", "answers": ["Gas Mulia"], "duration_sec": 42}'
+```
+
+```json
+{
+  "attempt_id": 1,
+  "topic": "campuran",
+  "total": 3,
+  "correct": 1,
+  "score": 33,
+  "results": [
+    { "index": 0, "correct": "Gas Mulia", "given": "Gas Mulia", "is_correct": true }
+  ]
+}
+```
+
+`score` = persentase bulat (`correct / total * 100`).
+`400` jumlah jawaban ≠ jumlah soal · `403` sesi milik pengguna lain · `404` sesi tidak ada/kedaluwarsa.
+
+### `GET /api/v1/quiz/attempts?limit=10` → 200
+
+```json
+{
+  "total": 1,
+  "data": [
+    { "id": 1, "topic": "campuran", "total": 3, "correct": 1, "score": 33,
+      "duration_sec": 42, "created_at": "2026-10-29T04:53:00+00:00" }
+  ]
+}
+```
+
+---
+
+

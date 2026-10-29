@@ -78,6 +78,9 @@ jobs:
       - name: Kompilasi (syntax check)
         run: python -m compileall -q .
 
+      - name: Unit test (pembangkit soal kuis)
+        run: python -m unittest test_quiz -v
+
       - name: Smoke test API (lifespan + readiness ke Postgres & Redis)
         run: |
           python -c "

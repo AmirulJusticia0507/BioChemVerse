@@ -254,3 +254,55 @@ async def list_ions() -> list[dict]:
         "SELECT name, formula, charge, description FROM polyatomic_ions ORDER BY name"
     )
     return [dict(record) for record in records]
+
+
+# --- Kuis unsur -------------------------------------------------------------
+
+_ATTEMPT_COLS = "id, topic, total, correct, score, duration_sec, created_at"
+
+
+async def all_elements_for_quiz() -> list[dict]:
+    """Data minimal unsur untuk membangkitkan soal kuis."""
+    if _pool is None:
+        return []
+    records = await _pool.fetch(
+        """
+        SELECT e.atomic_number, e.symbol, e.name, e.period, e.group_no,
+               c.name AS category_name
+        FROM elements e
+        LEFT JOIN categories c ON c.slug = e.category_slug
+        ORDER BY e.atomic_number
+        """
+    )
+    return [dict(record) for record in records]
+
+
+async def create_quiz_attempt(
+    user_id: str, topic: str, total: int, correct: int, score: int, duration_sec: int | None
+) -> dict:
+    record = await _pool.fetchrow(
+        f"""
+        INSERT INTO quiz_attempts (user_id, topic, total, correct, score, duration_sec)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING {_ATTEMPT_COLS}
+        """,
+        user_id,
+        topic,
+        total,
+        correct,
+        score,
+        duration_sec,
+    )
+    return dict(record)
+
+
+async def list_quiz_attempts(user_id: str, limit: int = 20) -> list[dict]:
+    records = await _pool.fetch(
+        f"""
+        SELECT {_ATTEMPT_COLS} FROM quiz_attempts
+        WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2
+        """,
+        user_id,
+        limit,
+    )
+    return [dict(record) for record in records]

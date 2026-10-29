@@ -674,6 +674,233 @@
           }
         }
       }
+    },
+    "/api/v1/quiz/start": {
+      "post": {
+        "tags": [
+          "quiz"
+        ],
+        "summary": "Mulai kuis (bangkitkan soal)",
+        "description": "Bangkitkan soal dari data unsur; kunci jawaban disimpan di server (Redis, 1 jam).",
+        "operationId": "start_quiz_api_v1_quiz_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizStartRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizStartResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Topik tidak dikenal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Data unsur belum cukup / Redis mati",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/quiz/submit": {
+      "post": {
+        "tags": [
+          "quiz"
+        ],
+        "summary": "Kirim jawaban kuis & simpan percobaan",
+        "description": "Nilai jawaban di server lalu simpan percobaan; sesi kuis sekali pakai.",
+        "operationId": "submit_quiz_api_v1_quiz_submit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizSubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizSubmitResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Jumlah jawaban tidak sesuai",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sesi kuis milik pengguna lain",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sesi kuis tidak ditemukan/kedaluwarsa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/quiz/attempts": {
+      "get": {
+        "tags": [
+          "quiz"
+        ],
+        "summary": "Riwayat percobaan kuis",
+        "description": "Riwayat percobaan kuis pengguna aktif, terbaru lebih dulu.",
+        "operationId": "list_quiz_attempts_api_v1_quiz_attempts_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Jumlah riwayat terbaru",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Jumlah riwayat terbaru"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuizAttemptListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak ada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1263,6 +1490,283 @@
         "type": "object",
         "title": "ProgressUpdateRequest"
       },
+      "QuizAttemptListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/QuizAttemptOut"
+            },
+            "type": "array",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "data"
+        ],
+        "title": "QuizAttemptListResponse"
+      },
+      "QuizAttemptOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "correct": {
+            "type": "integer",
+            "title": "Correct"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score"
+          },
+          "duration_sec": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Sec"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "topic",
+          "total",
+          "correct",
+          "score",
+          "created_at"
+        ],
+        "title": "QuizAttemptOut"
+      },
+      "QuizQuestionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "examples": [
+              "0"
+            ]
+          },
+          "question": {
+            "type": "string",
+            "title": "Question",
+            "examples": [
+              "Apa simbol kimia untuk Besi?"
+            ]
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options",
+            "examples": [
+              [
+                "Fe",
+                "F",
+                "Fr",
+                "Fm"
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "question",
+          "options"
+        ],
+        "title": "QuizQuestionOut"
+      },
+      "QuizResultItem": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "title": "Index"
+          },
+          "correct": {
+            "type": "string",
+            "title": "Correct",
+            "description": "Jawaban benar"
+          },
+          "given": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Given",
+            "description": "Jawaban pengguna"
+          },
+          "is_correct": {
+            "type": "boolean",
+            "title": "Is Correct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "index",
+          "correct",
+          "is_correct"
+        ],
+        "title": "QuizResultItem"
+      },
+      "QuizStartRequest": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "title": "Topic",
+            "description": "Topik: simbol|nomor-atom|kategori|golongan-periode|campuran",
+            "default": "campuran",
+            "examples": [
+              "simbol"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "description": "Jumlah soal (1-30)",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "title": "QuizStartRequest"
+      },
+      "QuizStartResponse": {
+        "properties": {
+          "quiz_id": {
+            "type": "string",
+            "title": "Quiz Id",
+            "description": "Token sesi kuis (berlaku 1 jam, sekali pakai)"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/QuizQuestionOut"
+            },
+            "type": "array",
+            "title": "Questions",
+            "description": "Soal tanpa kunci jawaban"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quiz_id",
+          "topic",
+          "questions"
+        ],
+        "title": "QuizStartResponse"
+      },
+      "QuizSubmitRequest": {
+        "properties": {
+          "quiz_id": {
+            "type": "string",
+            "title": "Quiz Id",
+            "description": "quiz_id dari /quiz/start"
+          },
+          "answers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Answers",
+            "description": "Jawaban berurutan sesuai soal"
+          },
+          "duration_sec": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 86400.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Sec",
+            "description": "Durasi pengerjaan (detik)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quiz_id",
+          "answers"
+        ],
+        "title": "QuizSubmitRequest"
+      },
+      "QuizSubmitResponse": {
+        "properties": {
+          "attempt_id": {
+            "type": "integer",
+            "title": "Attempt Id"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "correct": {
+            "type": "integer",
+            "title": "Correct"
+          },
+          "score": {
+            "type": "integer",
+            "title": "Score",
+            "description": "Persentase benar (0-100)"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/QuizResultItem"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attempt_id",
+          "topic",
+          "total",
+          "correct",
+          "score",
+          "results"
+        ],
+        "title": "QuizSubmitResponse"
+      },
       "ReadinessResponse": {
         "properties": {
           "status": {
@@ -1523,6 +2027,10 @@
     {
       "name": "elements",
       "description": "Tabel periodik: 118 unsur (nama Indonesia), kategori, dan ion poliatomik."
+    },
+    {
+      "name": "quiz",
+      "description": "Kuis tabel periodik: soal dibangkitkan server-side, skor & riwayat tersimpan."
     }
   ]
 }

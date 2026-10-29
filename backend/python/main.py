@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+import secrets
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 import cache
 import db
+import quiz
 from auth import create_access_token, get_current_user, hash_password, verify_password
 from config import get_settings
 from models import (
@@ -26,6 +28,11 @@ from models import (
     ProgressListResponse,
     ProgressOut,
     ProgressUpdateRequest,
+    QuizAttemptListResponse,
+    QuizStartRequest,
+    QuizStartResponse,
+    QuizSubmitRequest,
+    QuizSubmitResponse,
     ReadinessResponse,
     RegisterRequest,
     RootResponse,
@@ -53,6 +60,10 @@ TAGS_METADATA = [
     {
         "name": "elements",
         "description": "Tabel periodik: 118 unsur (nama Indonesia), kategori, dan ion poliatomik.",
+    },
+    {
+        "name": "quiz",
+        "description": "Kuis tabel periodik: soal dibangkitkan server-side, skor & riwayat tersimpan.",
     },
 ]
 
@@ -429,4 +440,134 @@ async def list_categories():
 async def list_ions():
     """Referensi ion poliatomik (kation & anion) beserta muatannya."""
     rows = await db.list_ions()
+    return {"total": len(rows), "data": rows}
+
+
+# --- Kuis unsur -------------------------------------------------------------
+
+
+@app.post(
+    "/api/v1/quiz/start",
+    tags=["quiz"],
+    response_model=QuizStartResponse,
+    responses={
+        400: {"model": ErrorResponse, "description": "Topik tidak dikenal"},
+        401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"},
+        503: {"model": ErrorResponse, "description": "Data unsur belum cukup / Redis mati"},
+    },
+    summary="Mulai kuis (bangkitkan soal)",
+)
+async def start_quiz(
+    payload: QuizStartRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Bangkitkan soal dari data unsur; kunci jawaban disimpan di server (Redis, 1 jam)."""
+    if payload.topic not in quiz.QUIZ_TOPICS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Topik harus salah satu dari: {', '.join(quiz.QUIZ_TOPICS)}",
+        )
+
+    elements = await db.all_elements_for_quiz()
+    if len(elements) < quiz.MIN_ELEMENTS:
+        raise HTTPException(status_code=503, detail="Data unsur belum cukup untuk membuat kuis")
+
+    built = quiz.build_quiz(elements, payload.topic, payload.count)
+    quiz_id = secrets.token_urlsafe(24)
+    stored = await cache.store_quiz(
+        {
+            "quiz_id": quiz_id,
+            "user_id": str(current_user["id"]),
+            "topic": built["topic"],
+            "answers": [item["answer"] for item in built["questions"]],
+        }
+    )
+    if not stored:
+        raise HTTPException(status_code=503, detail="Penyimpanan sesi kuis tidak tersedia")
+
+    return {
+        "quiz_id": quiz_id,
+        "topic": built["topic"],
+        "questions": [
+            {"id": item["id"], "question": item["question"], "options": item["options"]}
+            for item in built["questions"]
+        ],
+    }
+
+
+@app.post(
+    "/api/v1/quiz/submit",
+    tags=["quiz"],
+    response_model=QuizSubmitResponse,
+    responses={
+        400: {"model": ErrorResponse, "description": "Jumlah jawaban tidak sesuai"},
+        401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"},
+        403: {"model": ErrorResponse, "description": "Sesi kuis milik pengguna lain"},
+        404: {"model": ErrorResponse, "description": "Sesi kuis tidak ditemukan/kedaluwarsa"},
+    },
+    summary="Kirim jawaban kuis & simpan percobaan",
+)
+async def submit_quiz(
+    payload: QuizSubmitRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Nilai jawaban di server lalu simpan percobaan; sesi kuis sekali pakai."""
+    session = await cache.take_quiz(payload.quiz_id)
+    if session is None:
+        raise HTTPException(
+            status_code=404, detail="Sesi kuis tidak ditemukan atau sudah kedaluwarsa"
+        )
+    if session["user_id"] != str(current_user["id"]):
+        raise HTTPException(status_code=403, detail="Sesi kuis ini bukan milik Anda")
+
+    expected = session["answers"]
+    if len(payload.answers) != len(expected):
+        raise HTTPException(
+            status_code=400, detail="Jumlah jawaban tidak sesuai dengan jumlah soal"
+        )
+
+    results = [
+        {
+            "index": index,
+            "correct": correct,
+            "given": payload.answers[index] if index < len(payload.answers) else None,
+            "is_correct": payload.answers[index] == correct,
+        }
+        for index, correct in enumerate(expected)
+    ]
+    total = len(expected)
+    correct_count = sum(1 for item in results if item["is_correct"])
+    score = round(correct_count / total * 100) if total else 0
+
+    attempt = await db.create_quiz_attempt(
+        user_id=str(current_user["id"]),
+        topic=session["topic"],
+        total=total,
+        correct=correct_count,
+        score=score,
+        duration_sec=payload.duration_sec,
+    )
+    return {
+        "attempt_id": attempt["id"],
+        "topic": session["topic"],
+        "total": total,
+        "correct": correct_count,
+        "score": score,
+        "results": results,
+    }
+
+
+@app.get(
+    "/api/v1/quiz/attempts",
+    tags=["quiz"],
+    response_model=QuizAttemptListResponse,
+    responses={401: {"model": ErrorResponse, "description": "Token tidak valid atau tidak ada"}},
+    summary="Riwayat percobaan kuis",
+)
+async def list_quiz_attempts(
+    limit: int = Query(20, ge=1, le=100, description="Jumlah riwayat terbaru"),
+    current_user: dict = Depends(get_current_user),
+):
+    """Riwayat percobaan kuis pengguna aktif, terbaru lebih dulu."""
+    rows = await db.list_quiz_attempts(str(current_user["id"]), limit)
     return {"total": len(rows), "data": rows}
