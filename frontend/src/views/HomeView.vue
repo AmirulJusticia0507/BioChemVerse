@@ -1,9 +1,10 @@
 <script setup>
 import AnatomyBody from '../components/AnatomyBody.vue'
+import ProgressLeaderboard from './ProgressLeaderboard.vue'
 </script>
 
 <template>
-  <div>
+  <div class="mx-auto max-w-4xl px-4">
     <!-- Hero -->
     <section class="mx-auto max-w-4xl px-4 py-16 text-center">
       <p
@@ -45,5 +46,8 @@ import AnatomyBody from '../components/AnatomyBody.vue'
         <AnatomyBody />
       </div>
     </section>
+
+    <!-- Progress & Leaderboard -->
+    <ProgressLeaderboard />
   </div>
 </template>
