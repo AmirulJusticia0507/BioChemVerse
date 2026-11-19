@@ -38,6 +38,23 @@
             </button>
           </div>
 
+          <!-- Tombol potongan silang -->
+          <div class="mt-2 inline-flex rounded-lg bg-slate-800 p-1 ring-1 ring-slate-700">
+            <button
+              type="button"
+              class="rounded-md px-2 py-1.5 text-xs font-medium transition-colors focus:ring-2 focus:ring-emerald-500/50 focus:outline-none"
+              @click="crossSection = !crossSection"
+            >
+              <svg v-if="!crossSection" viewBox="0 0 24 24" class="h-4 w-4 shrink-0 fill-current text-slate-400" aria-hidden="true">
+                <path d="M10 6L8 8M12 12l-4-4M14 6l-2 2M1 10l4 4M15 3v7m4-7v7m1 3H5m4 0h6m0 0c0 4.42-4.03 8-9 8a9.96 9.96 0 0 1-4.25-2.61C.75 14.02 2 13 2 11a9.96 9.96 0 0 1 9-9 9.98 9.98 0 0 1 4.25 2.61C23.25 7 20 3 16 3zm0 0z" fill="none"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" class="h-4 w-4 shrink-0 fill-current text-emerald-400" aria-hidden="true">
+                <path d="M13.5 2.5c-0.83 0-1.5 0.67-1.5 1.5v6c0 0.83 0.67 1.5 1.5 1.5s1.5-0.67 1.5-1.5v-6c0-0.83-0.67-1.5-1.5-1.5zm0 11.5c-0.83 0-1.5 0.67-1.5 1.5v4c0 0.83 0.67 1.5 1.5 1.5s1.5-0.67 1.5-1.5v-4c0-0.83-0.67-1.5-1.5-1.5zm-13-3h-2v2h2v-2zm0 8h-2v2h2v-2zm13 0h-2v2h2v-2zm0-8h-2V7h2v2zM2 4.25C2 2.67 3.67 1 5.25 1h13.5c1.58 0 3.25 1.17 3.5 2.5s0.92 2.05 0 3.57l-7 7a2.5 2.5 0 0 1-3.5 0l-7-7c-0.83-1.42-0.17-3.09 1.55-3.55zM7.5 18.75l-4.5 4.5M7.5 5.25l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.25"/>
+              </svg>
+              Potongan Samping
+            </button>
+          </div>
+
         <div class="relative aspect-3/4 w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl shadow-blue-950/30">
           <iframe
             :key="variant"
@@ -192,6 +209,16 @@
           </li>
         </ul>
         <CardiovascularSystem v-if="selected === 'jantung'" />
+      <UrinarySystem v-if="selected === 'ginjal'" />
+      <DigestiveSystem v-if="selected === 'lambung'" />
+      <RespiratorySystem v-if="selected === 'dada'" />
+      <NervousSystem v-if="selected === 'kepala'" />
+      <MuscularSystem v-if="selected === 'serat-otot'" />
+      <SkeletalSystem v-if="selected === 'tulang'" />
+      <EndocrineSystem v-if="selected === 'endokrin'" />
+      <LymphaticSystem v-if="selected === 'limf'" />
+      <IntegumentarySystem v-if="selected === 'kulit'" />
+      <ReproductiveSystem v-if="selected === 'reproduksi-wanita'" />
         <button
           v-if="selected"
           type="button"
@@ -210,6 +237,16 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import CardiovascularSystem from './anatomy/CardiovascularSystem.vue'
+import UrinarySystem from './anatomy/UrinarySystem.vue'
+import DigestiveSystem from './anatomy/DigestiveSystem.vue'
+import RespiratorySystem from './anatomy/RespiratorySystem.vue'
+import NervousSystem from './anatomy/NervousSystem.vue'
+import MuscularSystem from './anatomy/MuscularSystem.vue'
+import SkeletalSystem from './anatomy/SkeletalSystem.vue'
+import EndocrineSystem from './anatomy/EndocrineSystem.vue'
+import LymphaticSystem from './anatomy/LymphaticSystem.vue'
+import IntegumentarySystem from './anatomy/IntegumentarySystem.vue'
+import ReproductiveSystem from './anatomy/ReproductiveSystem.vue'
 
 // Tampilan anatomi: siluet pria (default) atau wanita.
 const variants = [
@@ -438,6 +475,7 @@ onBeforeUnmount(() => {
 })
 
 const selected = ref(null)
+const crossSection = ref(false)
 const selectedInfo = computed(() => visibleRegions.value.find((r) => r.id === selected.value) ?? null)
 
 // Bagian khusus wanita (payudara, reproduksi) hanya tampil pada tampilan wanita.
