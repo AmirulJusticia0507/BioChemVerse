@@ -21,6 +21,23 @@
           </button>
         </div>
 
+          <!-- Kontrol bulu tubuh -->
+          <div class="mb-2 inline-flex rounded-lg bg-slate-800 p-1 ring-1 ring-slate-700">
+            <button
+              type="button"
+              class="rounded-md px-2 py-1.5 text-xs font-medium transition-colors focus:ring-2 focus:ring-blue-500/50 focus:outline-none"
+              @click="showBodyHair.value = !showBodyHair.value"
+            >
+              <svg v-if="!showBodyHair.value" viewBox="0 0 24 24" class="h-4 w-4 shrink-0 fill-current text-slate-400" aria-hidden="true">
+                <path d="M8 5v10l11-5z" />
+              </svg>
+              <svg v-else viewBox="0 0 24 24" class="h-4 w-4 shrink-0 fill-current text-slate-400" aria-hidden="true">
+                <path d="M8 5V5c5-3 11 3 11 8v3l-5 6-11-5v3L5 13v3l5 6z" />
+              </svg>
+              Bulu Tubuh
+            </button>
+          </div>
+
         <div class="relative aspect-3/4 w-full max-w-md overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl shadow-blue-950/30">
           <iframe
             :key="variant"
@@ -200,6 +217,7 @@ const variants = [
   { id: 'wanita', label: 'Wanita' },
 ]
 const variant = ref('pria')
+const showBodyHair = ref(true) // toggle tampil/sembunyikan bulu tubuh
 const variantLabel = computed(() => variants.find((v) => v.id === variant.value)?.label ?? '')
 const sketchfabModel = computed(() => ({
   pria: {
@@ -274,7 +292,13 @@ const buildBody = () => {
   body?.removeFromParent()
   body = new THREE.Group()
   const female = variant.value === 'wanita'
-  const skin = new THREE.MeshStandardMaterial({ color: female ? 0xb96a62 : 0xa9504b, roughness: 0.74, transparent: true, opacity: 0.78 })
+  const skin = new THREE.MeshStandardMaterial({ 
+  color: female ? 0xb96a62 : 0xa9504b, 
+  roughness: female ? 0.68 : 0.78,  // kulit wanita licin/halus; laki-laki sedikit lebih tekstur
+  skinScale: female ? 1.02 : 0.98, // faktor skala kecil untuk "ketebalan" struktur
+  transparent: true, 
+  opacity: 0.78 
+})
   const cloth = new THREE.MeshStandardMaterial({ color: 0xe8d9bd, roughness: 0.88 })
   const lung = new THREE.MeshStandardMaterial({ color: 0xc47b92, roughness: 0.65 })
   const heart = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.5 })
@@ -282,14 +306,14 @@ const buildBody = () => {
   const joint = new THREE.SphereGeometry(0.28, 28, 18)
   const limb = new THREE.CapsuleGeometry(0.25, 1.25, 8, 16)
 
-  addPart(body, new THREE.SphereGeometry(0.58, 32, 22), skin, [0, 3.72, 0], [0.92, 1.12, 0.9])
-  addPart(body, new THREE.CylinderGeometry(0.22, 0.28, 0.43, 20), skin, [0, 3.1, 0])
-  addPart(body, new THREE.SphereGeometry(1, 36, 24), skin, [0, 2.08, 0], [female ? 0.94 : 1.1, 1.2, 0.55])
-  addPart(body, new THREE.SphereGeometry(1, 32, 22), skin, [0, 0.74, 0], [female ? 0.98 : 0.92, 0.72, 0.52])
+  addPart(body, new THREE.SphereGeometry(0.58, 32, 22), skin, [0, 3.72, 0], skinScale.value ? [0.92 * skinScale.value, 1.12 * skinScale.value, 0.9 * skinScale.value] : [0.92, 1.12, 0.9])
+  addPart(body, new THREE.CylinderGeometry(0.22, 0.28, 0.43, 20), skin, [0, 3.1, 0], skinScale.value ? [0.92 * skinScale.value] : [0.92])
+  addPart(body, new THREE.SphereGeometry(1, 36, 24), skin, [0, 2.08, 0], skinScale.value ? [female ? 0.94 : 1.1 * skinScale.value, 1.2 * skinScale.value, 0.55 * skinScale.value] : [female ? 0.94 : 1.1, 1.2, 0.55])
+  addPart(body, new THREE.SphereGeometry(1, 32, 22), skin, [0, 0.74, 0], skinScale.value ? [female ? 0.98 : 0.92 * skinScale.value, 0.72 * skinScale.value, 0.52 * skinScale.value] : [female ? 0.98 : 0.92, 0.72, 0.52])
   addPart(body, new THREE.CylinderGeometry(female ? 0.72 : 0.68, female ? 0.83 : 0.78, 0.75, 28), cloth, [0, 0.34, 0], [1, 1, 0.72])
   // Atlas anatomy layer: organ sederhana di depan torso, bukan aset berlisensi pihak ketiga.
-  addPart(body, new THREE.SphereGeometry(0.43, 28, 18), lung, [-0.35, 2.05, 0.56], [0.82, 1.22, 0.3])
-  addPart(body, new THREE.SphereGeometry(0.43, 28, 18), lung, [0.35, 2.05, 0.56], [0.82, 1.22, 0.3])
+  addPart(body, new THREE.SphereGeometry(0.43, 28, 18), lung, [-0.35, 2.05, 0.56], skinScale.value ? [0.82 * skinScale.value, 1.22 * skinScale.value, 0.3 * skinScale.value] : [0.82, 1.22, 0.3])
+  addPart(body, new THREE.SphereGeometry(0.43, 28, 18), lung, [0.35, 2.05, 0.56], skinScale.value ? [0.82 * skinScale.value, 1.22 * skinScale.value, 0.3 * skinScale.value] : [0.82, 1.22, 0.3])
   const cardiac = addPart(body, new THREE.SphereGeometry(0.31, 24, 16), heart, [0.08, 1.68, 0.76], [0.9, 1.15, 0.42])
   cardiac.rotation.z = -0.3
   addPart(body, new THREE.SphereGeometry(0.56, 30, 18), organ, [0.2, 1.06, 0.56], [1.25, 0.62, 0.28])
@@ -297,17 +321,38 @@ const buildBody = () => {
     addPart(body, new THREE.TorusGeometry(0.16, 0.055, 10, 20), organ, [(col - 0.5) * 0.36, 0.38 - row * 0.19, 0.62])
   }
   for (const side of [-1, 1]) {
-    addPart(body, joint, skin, [side * (female ? 0.92 : 1.1), 2.62, 0])
-    const upperArm = addPart(body, limb, skin, [side * (female ? 1.13 : 1.32), 1.72, 0], [0.82, 1, 0.82])
+    addPart(body, joint, skin, [side * (female ? 0.92 : 1.1) * skinScale.value, 2.62, 0])
+    const upperArm = addPart(body, limb, skin, [side * (female ? 1.13 : 1.32) * skinScale.value, 1.72, 0], [0.82 * skinScale.value, 1 * skinScale.value, 0.82 * skinScale.value])
     upperArm.rotation.z = side * 0.17
-    const lowerArm = addPart(body, limb, skin, [side * (female ? 1.3 : 1.52), 0.3, 0], [0.7, 0.9, 0.7])
+    const lowerArm = addPart(body, limb, skin, [side * (female ? 1.3 : 1.52) * skinScale.value, 0.3 * skinScale.value, 0], [0.7 * skinScale.value, 0.9 * skinScale.value, 0.7 * skinScale.value])
     lowerArm.rotation.z = side * 0.1
-    addPart(body, new THREE.SphereGeometry(0.24, 22, 14), skin, [side * (female ? 1.38 : 1.62), -0.53, 0], [0.85, 1.18, 0.65])
-    addPart(body, limb, skin, [side * (female ? 0.48 : 0.5), -1.18, 0], [female ? 0.9 : 1, 1.27, 0.92])
-    addPart(body, limb, skin, [side * (female ? 0.48 : 0.5), -2.74, 0], [female ? 0.72 : 0.82, 1.25, 0.78])
-    addPart(body, new THREE.SphereGeometry(0.3, 22, 14), skin, [side * (female ? 0.48 : 0.5), -3.9, 0.14], [0.86, 0.55, 1.45])
+    addPart(body, new THREE.SphereGeometry(0.24, 22, 14), skin, [side * (female ? 1.38 : 1.62) * skinScale.value, -0.53 * skinScale.value, 0], [0.85 * skinScale.value, 1.18 * skinScale.value, 0.65 * skinScale.value])
+    addPart(body, limb, skin, [side * (female ? 0.48 : 0.5) * skinScale.value, -1.18 * skinScale.value, 0], [female ? 0.9 * skinScale.value : 1 * skinScale.value, 1.27 * skinScale.value, 0.92 * skinScale.value])
+    addPart(body, limb, skin, [side * (female ? 0.48 : 0.5) * skinScale.value, -2.74 * skinScale.value, 0], [female ? 0.72 : 0.82 * skinScale.value, 1.25 * skinScale.value, 0.78 * skinScale.value])
+    addPart(body, new THREE.SphereGeometry(0.3, 22, 14), skin, [side * (female ? 0.48 : 0.5) * skinScale.value, -3.9 * skinScale.value, 0.14], [0.86 * skinScale.value, 0.55 * skinScale.value, 1.45 * skinScale.value])
   }
-  if (female) for (const side of [-1, 1]) addPart(body, new THREE.SphereGeometry(0.35, 24, 16), skin, [side * 0.35, 2.15, 0.45], [1, 1, 0.55])
+  if (female) for (const side of [-1, 1]) addPart(body, new THREE.SphereGeometry(0.35, 24, 16), skin, [side * 0.35 * skinScale.value, 2.15 * skinScale.value, 0.45 * skinScale.value], [1 * skinScale.value, 1 * skinScale.value, 0.55 * skinScale.value])
+
+  // --- Bulu tubuh laki-laki (area sayat/dada) ---
+  if (variant.value === 'pria' && showBodyHair.value) {
+    const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x4a3b2a, roughness: 0.9 })
+    const hairCount = 80
+    for (let i = 0; i < hairCount; i++) {
+      const hairLength = 0.15 + Math.random() * 0.1
+      const hairRadius = 0.01 + Math.random() * 0.005
+      const angle = Math.random() * Math.PI * 2
+      const radius = 0.9 + Math.random() * 0.2 // distributed on torso area
+      const height = 2.5 + Math.random() * 0.5 // y-position on torso
+      const x = Math.cos(angle) * radius
+      const z = Math.sin(angle) * radius
+      const hairGeom = new THREE.CylinderGeometry(hairRadius, hairRadius, hairLength, 6, 1)
+      const hairMesh = new THREE.Mesh(hairGeom, hairMaterial)
+      hairMesh.position.set(x, height, z)
+      hairMesh.rotation.x = Math.PI / 2 // layar horizontal
+      hairMesh.rotation.z = (Math.random() - 0.5) * 0.3 // slight tilt
+      body.add(hairMesh)
+    }
+  }
   scene.add(body)
   frameCamera()
 }
